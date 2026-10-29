@@ -1,0 +1,229 @@
+# VOCI Airport Configuration (Cochin International Airport, Kochi, India)
+# Single arrival runway 09/27. The live dashboard uses the published runway
+# geometry and a schematic local map; it is not an operational navigation chart.
+
+airport:
+  icao: "VOCI"
+  iata: "COK"
+  name: "Cochin International Airport"
+  city: "Kochi"
+  country: "India"
+  runways:
+    - id: "09"
+      heading: 90
+      length_m: 3400
+      width_m: 45
+      arrival_runway: true
+    - id: "27"
+      heading: 270
+      length_m: 3400
+      width_m: 45
+      arrival_runway: false
+
+  # Schematic map data for the live dashboard. Coordinates are in WGS-84.
+  # The runway and approach geometry use the published VOCI runway 09/27
+  # alignment; surrounding water/place shapes are simplified for presentation.
+  map:
+    attribution: "Schematic local map · runway/approach geometry from VOCI data · not for navigation."
+    center: { lat: 10.1520, lon: 76.4019 }
+    bounds:
+      north: 10.40
+      south: 9.90
+      east: 76.64
+      west: 76.14
+    runway:
+      id: "09"
+      opposite_id: "27"
+      threshold: { lat: 10.1520, lon: 76.3864 }
+      end: { lat: 10.1520, lon: 76.4174 }
+      width_m: 45
+    approach:
+      faf: { lat: 10.1520, lon: 76.2172 }
+      threshold: { lat: 10.1520, lon: 76.3864 }
+      course_deg: 90
+      distance_nm: 10.0
+    holding:
+      name: "COK HOLD"
+      fix: { lat: 10.2800, lon: 76.4800 }
+      orbit_sec: 120
+    terminal:
+      name: "Terminal"
+      lat: 10.1400
+      lon: 76.4040
+    taxiway:
+      - { lat: 10.1520, lon: 76.4174 }
+      - { lat: 10.1400, lon: 76.4150 }
+      - { lat: 10.1400, lon: 76.4040 }
+    entry_radius_nm: 14
+    taxi_time_sec: 300
+    geography:
+      water:
+        - name: "Arabian Sea"
+          points:
+            - { lat: 9.84, lon: 76.06 }
+            - { lat: 10.46, lon: 76.06 }
+            - { lat: 10.46, lon: 76.18 }
+            - { lat: 10.35, lon: 76.19 }
+            - { lat: 10.25, lon: 76.21 }
+            - { lat: 10.15, lon: 76.225 }
+            - { lat: 10.05, lon: 76.235 }
+            - { lat: 9.95, lon: 76.215 }
+            - { lat: 9.84, lon: 76.19 }
+        - name: "Vembanad Lake"
+          points:
+            - { lat: 9.84, lon: 76.28 }
+            - { lat: 9.90, lon: 76.34 }
+            - { lat: 9.96, lon: 76.45 }
+            - { lat: 10.00, lon: 76.46 }
+            - { lat: 10.01, lon: 76.39 }
+            - { lat: 9.97, lon: 76.31 }
+            - { lat: 9.90, lon: 76.26 }
+      rivers:
+        - name: "Periyar River"
+          points:
+            - { lat: 10.20, lon: 76.50 }
+            - { lat: 10.17, lon: 76.43 }
+            - { lat: 10.11, lon: 76.35 }
+            - { lat: 10.07, lon: 76.28 }
+            - { lat: 10.05, lon: 76.235 }
+      places:
+        - { name: "Kochi", lat: 9.9312, lon: 76.2673 }
+        - { name: "Aluva", lat: 10.1076, lon: 76.3516 }
+        - { name: "Angamaly", lat: 10.1960, lon: 76.3860 }
+        - { name: "Arabian Sea", lat: 10.10, lon: 76.12 }
+        - { name: "Vembanad Lake", lat: 9.93, lon: 76.37 }
+    origin_airports:
+      DEL: { name: "Delhi", lat: 28.5562, lon: 77.1000 }
+      BOM: { name: "Mumbai", lat: 19.0896, lon: 72.8656 }
+      BLR: { name: "Bengaluru", lat: 13.1986, lon: 77.7066 }
+      MAA: { name: "Chennai", lat: 12.9941, lon: 80.1709 }
+      HYD: { name: "Hyderabad", lat: 17.2403, lon: 78.4294 }
+      CCU: { name: "Kolkata", lat: 22.6547, lon: 88.4467 }
+      AMD: { name: "Ahmedabad", lat: 23.0713, lon: 72.6347 }
+      GOI: { name: "Goa", lat: 15.3808, lon: 73.8314 }
+      TRV: { name: "Thiruvananthapuram", lat: 8.4821, lon: 76.9201 }
+      IXE: { name: "Mangaluru", lat: 12.9613, lon: 74.8901 }
+      PNQ: { name: "Pune", lat: 18.5821, lon: 73.9197 }
+      JAI: { name: "Jaipur", lat: 26.8242, lon: 75.8122 }
+      LKO: { name: "Lucknow", lat: 26.7606, lon: 80.8893 }
+      IXC: { name: "Chandigarh", lat: 30.6735, lon: 76.7885 }
+      AGX: { name: "Agatti", lat: 10.8237, lon: 72.1760 }
+      IXM: { name: "Madurai", lat: 9.8345, lon: 78.0934 }
+
+# Wake Turbulence Categories (ICAO Doc 4444)
+wake_categories:
+  H: "Heavy"      # MTOW >= 136,000 kg
+  M: "Medium"     # 7,000 kg < MTOW < 136,000 kg
+  L: "Light"      # MTOW <= 7,000 kg
+
+# Separation Minima (NM) - ICAO Doc 4444 Table 4-1
+# Rows = Leading aircraft, Columns = Following aircraft
+separation_nm:
+  H:
+    H: 4.0
+    M: 5.0
+    L: 6.0
+  M:
+    H: 3.0
+    M: 3.0
+    L: 5.0
+  L:
+    H: 3.0
+    M: 3.0
+    L: 3.0
+
+# Approach Parameters
+approach:
+  final_approach_fix_distance_nm: 10.0    # Distance from threshold to FAF
+  final_approach_speed_kts: 140           # Typical final approach speed
+  approach_angle_deg: 3.0                 # Glideslope angle
+  threshold_crossing_height_ft: 50        # Height at runway threshold
+
+# Fleet Mix (kept consistent with the baseline experiment)
+fleet_mix:
+  H: 0.30   # 30% Heavy (B777, A350, B747, etc.)
+  M: 0.60   # 60% Medium (A320, B737, etc.)
+  L: 0.10   # 10% Light (regional jets, turboprops)
+
+# Aircraft Type Mapping (ICAO code -> OpenAP aircraft)
+aircraft_types:
+  # Heavy
+  B777: { wake: "H", openap: "B777-300ER", mass_kg: 250000 }
+  B77W: { wake: "H", openap: "B777-300ER", mass_kg: 250000 }
+  B77L: { wake: "H", openap: "B777-200LR", mass_kg: 250000 }
+  A359: { wake: "H", openap: "A350-900", mass_kg: 250000 }
+  A35K: { wake: "H", openap: "A350-1000", mass_kg: 300000 }
+  B748: { wake: "H", openap: "B747-8", mass_kg: 400000 }
+  B744: { wake: "H", openap: "B747-400", mass_kg: 400000 }
+  A388: { wake: "H", openap: "A380-800", mass_kg: 500000 }
+
+  # Medium
+  A320: { wake: "M", openap: "A320-200", mass_kg: 78000 }
+  A321: { wake: "M", openap: "A321-200", mass_kg: 93000 }
+  A319: { wake: "M", openap: "A319-100", mass_kg: 75000 }
+  B738: { wake: "M", openap: "B737-800", mass_kg: 79000 }
+  B739: { wake: "M", openap: "B737-900", mass_kg: 85000 }
+  B737: { wake: "M", openap: "B737-700", mass_kg: 70000 }
+  A220: { wake: "M", openap: "A220-300", mass_kg: 63000 }
+  E190: { wake: "M", openap: "E190", mass_kg: 52000 }
+  E195: { wake: "M", openap: "E195-E2", mass_kg: 62000 }
+
+  # Light
+  CRJ9: { wake: "L", openap: "CRJ-900", mass_kg: 41000 }
+  CRJ7: { wake: "L", openap: "CRJ-700", mass_kg: 36000 }
+  DH8D: { wake: "L", openap: "DH8D", mass_kg: 29000 }
+  AT76: { wake: "L", openap: "ATR72", mass_kg: 23000 }
+
+# Default aircraft if type not found
+default_aircraft: { wake: "M", openap: "A320-200", mass_kg: 78000 }
+
+# Simulation Parameters
+simulation:
+  time_step_sec: 1.0
+  max_simulation_time_sec: 7200  # 2 hours (single-run default; experiments extend this)
+  warmup_period_sec: 300         # 5 min warmup before measurements
+  runway_occupancy_sec: 40       # time on runway after touchdown
+  taxi_time_sec: 300             # taxi to gate (not runway-blocking)
+
+# Traffic Generation
+traffic:
+  arrival_rate_per_hour: 40      # Base rate (adjustable per experiment)
+  peak_multiplier: 1.5           # Peak hour multiplier
+  peak_start_hour: 7             # 07:00 local
+  peak_end_hour: 10              # 10:00 local
+
+# GA Parameters (can be overridden per experiment)
+ga:
+  population_size: 100
+  generations: 200
+  tournament_size: 3
+  crossover_prob: 0.9
+  mutation_prob: 0.1
+  elitism_ratio: 0.05
+  early_stopping_generations: 30
+  random_seed: 42
+
+# Fitness Weights (W1, W2, W3 for Delay, Fuel, Conflict)
+fitness_weights:
+  delay: 0.4
+  fuel: 0.3
+  conflict: 0.3
+
+# Conflict Detection
+conflict:
+  horizontal_separation_nm: 2.5   # Minimum horizontal separation
+  vertical_separation_ft: 1000    # Minimum vertical separation
+  cpa_lookahead_sec: 300          # Time horizon for CPA calculation
+  conflict_margin_ratio: 1.20     # gap below 1.2x required separation is "tight"
+
+# Fuel proxy for the simulation milestone. OpenAP integration is deferred.
+# Values are holding fuel-flow estimates in kg/second by wake category.
+fuel_proxy:
+  H: 1.20
+  M: 0.50
+  L: 0.20
+
+# Disruption Scenarios
+disruption:
+  runway_closure_time_sec: 1800   # 30 min into simulation
+  closure_duration_sec: 1800      # 30 min closure

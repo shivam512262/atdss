@@ -34,8 +34,11 @@ def flight_by_id(snapshot, aircraft_id):
 def test_snapshot_is_complete_and_json_serializable(simulation):
     snapshot = simulation.snapshot()
 
-    assert snapshot["airport"]["icao"] == "EHAM"
-    assert snapshot["airport"]["runway"] == "24"
+    assert snapshot["airport"]["icao"] == "VOCI"
+    assert snapshot["airport"]["iata"] == "COK"
+    assert snapshot["airport"]["runway"] == "09"
+    assert snapshot["airport"]["map"]["runway"]["id"] == "09"
+    assert snapshot["airport"]["map"]["approach"]["distance_nm"] == pytest.approx(10.0)
     assert len(snapshot["flights"]) == 30
     assert snapshot["metrics"]["total_flights"] == 30
     assert snapshot["scenario"]["strategy"] == "fcfs"
@@ -43,6 +46,8 @@ def test_snapshot_is_complete_and_json_serializable(simulation):
     assert snapshot["sim_time_text"] == "00:00:00"
     assert snapshot["flights"][0]["callsign"]
     assert snapshot["flights"][0]["origin"]
+    assert snapshot["flights"][0]["origin_name"]
+    assert snapshot["flights"][0]["origin_lat"] is not None
     assert snapshot["flights"][0]["wake"] in {"H", "M", "L"}
     json.dumps(snapshot)
 

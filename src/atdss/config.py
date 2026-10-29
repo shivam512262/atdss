@@ -52,6 +52,35 @@ class AirportConfig:
     raw: dict[str, Any]
 
     @property
+    def iata(self) -> str:
+        """IATA code when the configuration provides one."""
+        return str(self.raw.get("airport", {}).get("iata", ""))
+
+    @property
+    def city(self) -> str:
+        """Airport city when the configuration provides one."""
+        return str(self.raw.get("airport", {}).get("city", ""))
+
+    @property
+    def country(self) -> str:
+        """Airport country when the configuration provides one."""
+        return str(self.raw.get("airport", {}).get("country", ""))
+
+    @property
+    def arrival_runway(self) -> str:
+        """Identifier of the configured arrival runway."""
+        runways = self.raw.get("airport", {}).get("runways", [])
+        for runway in runways:
+            if runway.get("arrival_runway"):
+                return str(runway.get("id", "09"))
+        return str(runways[0].get("id", "09")) if runways else "09"
+
+    @property
+    def map_data(self) -> dict[str, Any] | None:
+        """Schematic live-map geometry, when configured."""
+        return self.raw.get("airport", {}).get("map")
+
+    @property
     def approach_speed_nm_per_sec(self) -> float:
         """Final approach speed converted from knots to NM/second."""
         return self.final_approach_speed_kts / 3600.0
@@ -73,7 +102,7 @@ class AirportConfig:
         return self.aircraft_types.get(icao_type, self.default_aircraft)
 
 
-DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "ehamp.yaml"
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "voci.yaml"
 
 
 def load_config(path: str | Path | None = None) -> AirportConfig:

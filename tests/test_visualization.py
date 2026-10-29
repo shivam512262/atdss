@@ -34,7 +34,8 @@ def result(config):
 def test_payload_contains_aircraft_and_runway(result, config):
     payload = build_visual_payload(config, result)
     assert len(payload["aircraft"]) == 12
-    assert payload["airport"]["icao"] == "EHAM"
+    assert payload["airport"]["icao"] == "VOCI"
+    assert payload["runway"]["id"] == "09"
     assert payload["runway"]["faf_distance_nm"] == pytest.approx(10.0)
     assert payload["runway"]["final_approach_duration_sec"] == pytest.approx(
         10.0 / (140.0 / 3600.0)

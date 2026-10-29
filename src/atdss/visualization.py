@@ -63,6 +63,7 @@ def build_visual_payload(
         "strategy": result.strategy,
         "metrics": result.metrics,
         "runway": {
+            "id": config.arrival_runway,
             "occupancy_sec": float(config.runway_occupancy_sec),
             "faf_distance_nm": float(config.faf_distance_nm),
             "approach_speed_kts": float(config.final_approach_speed_kts),
@@ -396,7 +397,7 @@ function drawScene() {
   ctx.fillStyle = "#c9d8ea";
   ctx.font = "bold 12px Consolas, monospace";
   ctx.textAlign = "center";
-  ctx.fillText("RWY 24", (runwayX0 + runwayX1) / 2, pathY - runwayH / 2 - 10);
+  ctx.fillText("RWY " + R.id, (runwayX0 + runwayX1) / 2, pathY - runwayH / 2 - 10);
   ctx.fillStyle = "#8fa8c4";
   ctx.font = "11px Consolas, monospace";
   ctx.fillText("THRESHOLD", runwayX0, pathY + runwayH / 2 + 20);

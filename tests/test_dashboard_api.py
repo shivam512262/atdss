@@ -28,10 +28,13 @@ def test_index_and_static_assets(client):
     index = client.get("/")
     assert index.status_code == 200
     assert "AT-DSS Live Arrival Simulator" in index.text
+    assert 'id="map"' in index.text
+    assert "Live airport map" in index.text
 
     script = client.get("/static/app.js")
     assert script.status_code == 200
     assert "WebSocket" in script.text
+    assert "drawMap" in script.text
 
     styles = client.get("/static/styles.css")
     assert styles.status_code == 200
@@ -47,7 +50,9 @@ def test_health_and_state_endpoints(client):
     state = client.get("/api/state")
     assert state.status_code == 200
     payload = state.json()
-    assert payload["airport"]["icao"] == "EHAM"
+    assert payload["airport"]["icao"] == "VOCI"
+    assert payload["airport"]["iata"] == "COK"
+    assert payload["airport"]["map"]["runway"]["id"] == "09"
     assert len(payload["flights"]) == 12
     assert "metrics" in payload
     assert "runway" in payload
@@ -106,5 +111,6 @@ def test_scenario_regeneration(client):
 def test_websocket_streams_snapshot(client):
     with client.websocket_connect("/ws") as websocket:
         payload = websocket.receive_json()
-    assert payload["airport"]["icao"] == "EHAM"
+    assert payload["airport"]["icao"] == "VOCI"
+    assert payload["airport"]["runway"] == "09"
     assert len(payload["flights"]) >= 12

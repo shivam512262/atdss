@@ -8,25 +8,24 @@ from .config import AirportConfig, WakeCategory
 from .models import Aircraft
 
 _ORIGINS = (
-    "EGLL",
-    "EDDF",
-    "LFPG",
-    "LEMD",
-    "LIRF",
-    "LSZH",
-    "EKCH",
-    "ESSA",
-    "ENGM",
-    "EBBR",
+    "DEL",
+    "BOM",
+    "BLR",
+    "MAA",
+    "HYD",
+    "CCU",
+    "AMD",
+    "GOI",
+    "TRV",
+    "IXE",
+    "PNQ",
+    "JAI",
+    "LKO",
+    "IXC",
+    "AGX",
+    "IXM",
 )
-_AIRLINE_PREFIXES = ("KL", "HV", "BA", "LH", "AF", "LX", "SK", "AY")
-
-
-def _arrival_runway(config: AirportConfig) -> str:
-    for runway in config.raw.get("airport", {}).get("runways", []):
-        if runway.get("arrival_runway"):
-            return str(runway.get("id", "24"))
-    return "24"
+_AIRLINE_PREFIXES = ("6E", "AI", "IX", "QP", "SG", "9I")
 
 
 def generate_traffic(
@@ -98,7 +97,7 @@ def generate_traffic(
         for wake in wake_categories
     }
 
-    runway = _arrival_runway(config)
+    runway = config.arrival_runway
     aircraft: list[Aircraft] = []
     for index, scheduled_time in enumerate(scheduled_times):
         wake = rng.choices(wake_categories, weights=weights, k=1)[0]

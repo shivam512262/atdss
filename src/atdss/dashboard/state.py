@@ -32,13 +32,6 @@ def format_time(seconds: float) -> str:
     return f"{hours:02d}:{minutes:02d}:{secs:02d}"
 
 
-def _arrival_runway(config: AirportConfig) -> str:
-    for runway in config.raw.get("airport", {}).get("runways", []):
-        if runway.get("arrival_runway"):
-            return str(runway.get("id", "24"))
-    return "24"
-
-
 class LiveSimulation:
     """A controllable live clock over one generated arrival scenario."""
 
@@ -93,7 +86,9 @@ class LiveSimulation:
         self.final_approach_duration = (
             self.config.faf_distance_nm / self.config.approach_speed_nm_per_sec
         )
-        self.runway = _arrival_runway(self.config)
+        self.runway = self.config.arrival_runway
+        self.map_data = self.config.map_data or {}
+        self.origin_airports = self.map_data.get("origin_airports", {})
         self._conflict_by_following = {
             conflict.following_id: conflict for conflict in result.conflicts
         }
@@ -208,6 +203,7 @@ class LiveSimulation:
         delay = max(0.0, effective - scheduled)
         position = self._position_nm(aircraft, t, status)
         conflict = self._conflict_by_following.get(aircraft.id)
+        origin_info = self.origin_airports.get(aircraft.origin, {})
 
         return {
             "id": aircraft.id,
@@ -216,6 +212,9 @@ class LiveSimulation:
             "type": aircraft.icao_type,
             "wake": aircraft.wake.value,
             "origin": aircraft.origin,
+            "origin_name": origin_info.get("name", aircraft.origin),
+            "origin_lat": origin_info.get("lat"),
+            "origin_lon": origin_info.get("lon"),
             "runway": aircraft.runway,
             "sequence_position": aircraft.sequence_position,
             "scheduled": round(scheduled, 3),
@@ -352,8 +351,12 @@ class LiveSimulation:
         return {
             "airport": {
                 "icao": self.config.icao,
+                "iata": self.config.iata,
                 "name": self.config.name,
+                "city": self.config.city,
+                "country": self.config.country,
                 "runway": self.runway,
+                "map": self.map_data or None,
             },
             "scenario": {
                 "strategy": self.strategy,
@@ -375,6 +378,7 @@ class LiveSimulation:
                 "faf_distance_nm": self.config.faf_distance_nm,
                 "approach_speed_kts": self.config.final_approach_speed_kts,
                 "speed_nm_per_sec": self.config.approach_speed_nm_per_sec,
+                "angle_deg": self.config.approach_angle_deg,
                 "duration_sec": self.final_approach_duration,
                 "holding_lead_sec": HOLDING_LEAD_SEC,
                 "en_route_lead_sec": EN_ROUTE_LEAD_SEC,

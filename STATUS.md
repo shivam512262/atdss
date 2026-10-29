@@ -9,7 +9,8 @@ gate/taxi optimization.
 
 ## What can be demonstrated
 
-- Synthetic arrival traffic for EHAM/Schiphol with a configurable fleet mix.
+- Synthetic arrival traffic for VOCI/Cochin International Airport (COK), Kochi,
+  India, with a configurable fleet mix.
 - FCFS baseline.
 - Bounded wake-priority baseline.
 - ICAO-style wake-separation enforcement.
@@ -21,9 +22,10 @@ gate/taxi optimization.
 - CSV, Markdown, and PNG outputs.
 - Standalone HTML real-time animation with final-approach movement, runway
   occupancy, holding queue, and live counters.
-- Live synthetic dashboard: FastAPI/WebSocket streaming, final-approach radar,
-  holding stack, sortable flight board, runway timeline, alerts, flight detail
-  drawer, pause/resume, speed control, reset, and scenario regeneration.
+- Live synthetic dashboard: FastAPI/WebSocket streaming, real-airport map view
+  for VOCI/COK, final-approach radar, holding stack, sortable flight board,
+  runway timeline, alerts, flight detail drawer, pause/resume, speed control,
+  reset, and scenario regeneration.
 - Automated tests.
 
 ## Evidence
@@ -34,7 +36,7 @@ Run from `S:\Code\BE project\atdss-code`:
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Current result: **25 passed**.
+Current result: **26 passed**.
 
 ```powershell
 .\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30
@@ -90,12 +92,13 @@ Files are in `results/`:
 
 1. Show the repository layout and state that this is a separate, git-ready
    implementation.
-2. Run the tests and show `25 passed`.
+2. Run the tests and show `26 passed`.
 3. Run one FCFS case and one priority case; point out the sequence table.
-4. Launch the live dashboard and show the clock advancing, final-approach
-   aircraft, holding stack, flight board, runway timeline, alerts, and the
-   click-through detail drawer. Demonstrate pause/resume, speed, reset, and
-   scenario regeneration.
+4. Launch the live dashboard and show the clock advancing, the VOCI/COK
+   airport map with aircraft moving through en-route, hold, final, runway, and
+   taxi phases, the final-approach radar, holding stack, flight board, runway
+   timeline, alerts, and the click-through detail drawer. Demonstrate
+   pause/resume, speed, reset, and scenario regeneration.
 5. Generate and open the standalone HTML visual simulation; show aircraft
    moving along final approach, the holding queue, and live counters.
 6. Run the 100/250/500 experiment and show the CSV and plots.
@@ -113,7 +116,7 @@ Files are in `results/`:
 
 | Component | Status |
 |---|---|
-| Configuration and airport data | Complete for EHAM |
+| Configuration and airport data | Complete for VOCI/COK |
 | Traffic generation | Complete |
 | FCFS baseline | Complete |
 | Priority baseline | Complete |

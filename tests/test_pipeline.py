@@ -18,7 +18,13 @@ def config():
 
 
 def test_config_loads(config):
-    assert config.icao == "EHAM"
+    assert config.icao == "VOCI"
+    assert config.iata == "COK"
+    assert config.city == "Kochi"
+    assert config.country == "India"
+    assert config.arrival_runway == "09"
+    assert config.map_data is not None
+    assert config.map_data["runway"]["id"] == "09"
     assert config.separation_nm_between(
         WakeCategory.HEAVY, WakeCategory.MEDIUM
     ) == pytest.approx(5.0)
@@ -33,6 +39,13 @@ def test_traffic_is_reproducible(config):
         item.scheduled_arrival_sec for item in second
     ]
     assert all(item.scheduled_arrival_sec > 0 for item in first)
+
+
+def test_traffic_uses_indian_origins_and_arrival_runway(config):
+    traffic = generate_traffic(config, count=20, seed=7)
+    origins = config.map_data["origin_airports"]
+    assert all(item.origin in origins for item in traffic)
+    assert all(item.runway == "09" for item in traffic)
 
 
 def test_fcfs_preserves_scheduled_order(config):

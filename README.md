@@ -30,7 +30,7 @@ setup step first.
 One-time setup:
 
 ```powershell
-py -3.12 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
@@ -115,7 +115,10 @@ The remaining examples use the Windows interpreter path
 The dashboard opens with a **100-flight synthetic scenario** and shows:
 
 - a simulated clock that advances in real time;
-- aircraft on a 10 NM final approach;
+- a live airport map for Cochin International Airport (VOCI/COK) with aircraft
+  moving from en-route, through the hold, onto final approach, and along the
+  runway/taxiway;
+- a 10 NM final-approach radar;
 - a holding stack on the left;
 - runway occupancy and the next landing;
 - a sortable flight board with schedule, ETA, actual landing, status, delay, and
@@ -143,7 +146,7 @@ not step the SimPy event loop in real time.
 Expected result:
 
 ```text
-25 passed
+26 passed
 ```
 
 A third-party deprecation warning from Starlette/httpx may also appear; it does
@@ -153,7 +156,7 @@ not affect the tests.
 
 | Item | Current state |
 |---|---|
-| Airport | EHAM / Amsterdam Schiphol, arrival runway 24 |
+| Airport | VOCI / Cochin International Airport (COK), Kochi, India — arrival runway 09 |
 | Traffic | Synthetic Poisson arrivals with a configurable fleet mix |
 | Sequencing | FCFS and bounded wake-priority baselines |
 | Safety model | ICAO-style wake-separation matrix |
@@ -174,6 +177,8 @@ new simulation with the selected parameters.
 ### Dashboard features
 
 - **Clock and playback:** pause/resume, speed control, reset.
+- **Live airport map:** a real-airport view for VOCI/COK with the runway,
+  terminal, localizer path, holding pattern, and moving arrival aircraft.
 - **Final-approach radar:** aircraft positions, distance from the threshold,
   runway occupancy, and holding stack.
 - **Flight board:** callsign, aircraft type, wake category, origin, scheduled
@@ -183,6 +188,10 @@ new simulation with the selected parameters.
 - **Flight detail drawer:** timing, live position, separation margin,
   predecessor, and holding-fuel proxy.
 - **Scenario form:** flights, seed, strategy, and arrival rate.
+
+The map is a schematic local view built around the published VOCI runway
+09/27 geometry. It is for simulation and demonstration only, not for
+navigation.
 
 ### Controls
 
@@ -200,7 +209,7 @@ new simulation with the selected parameters.
 
 | Option | Default | Description |
 |---|---:|---|
-| `--config` | repository EHAM config | Path to an airport YAML file |
+| `--config` | repository VOCI config | Path to an airport YAML file |
 | `--host` | `127.0.0.1` | Bind address |
 | `--port` | `8000` | Bind port |
 | `--flights` | `100` | Number of arrival flights |
@@ -366,7 +375,7 @@ does not write result files.
 ## How it works
 
 ```text
-config/ehamp.yaml
+config/voci.yaml
         |
         v
 synthetic traffic generation
@@ -427,7 +436,8 @@ not present it as a validated fuel model.
 ### Implemented
 
 - Synthetic Poisson traffic with a configurable fleet mix.
-- EHAM/Schiphol single-runway configuration.
+- VOCI/Cochin International Airport single-runway configuration with a real
+  airport map view.
 - FCFS and bounded wake-priority baselines.
 - ICAO-style wake-separation enforcement.
 - Arbitrary-sequence support for a future optimizer.
@@ -458,7 +468,8 @@ prototype using synthetic data.
 
 ```text
 atdss-code/
-  config/ehamp.yaml                  Airport, separation, traffic, and proxy settings
+  config/voci.yaml                   VOCI/COK airport, map, separation, and proxy settings
+  config/ehamp.yaml                  Legacy EHAM comparison configuration
   src/atdss/
     config.py                        YAML loading and typed airport config
     models.py                        Aircraft, strategy, conflict, and result models

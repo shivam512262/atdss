@@ -76,12 +76,33 @@
     </article>
   </section>
 
+  <section class="panel map-panel">
+    <div class="panel-head">
+      <div>
+        <h2>Live airport map</h2>
+        <p id="mapSubtitle">Loading airport geometry…</p>
+      </div>
+      <span id="mapBadge" class="pill">LIVE MAP</span>
+    </div>
+    <div class="canvas-wrap map-wrap">
+      <canvas id="map" aria-label="Live airport map with approaching aircraft"></canvas>
+    </div>
+    <div class="legend map-legend">
+      <span><i class="dot enroute"></i>En route</span>
+      <span><i class="dot holding"></i>Holding</span>
+      <span><i class="dot final"></i>Final</span>
+      <span><i class="dot landed"></i>Landed / taxi</span>
+      <span><i class="line"></i>Arrival path</span>
+      <span id="mapAttribution" class="map-attribution"></span>
+    </div>
+  </section>
+
   <main class="layout">
     <section class="panel radar-panel">
       <div class="panel-head">
         <div>
           <h2>Final approach</h2>
-          <p>Live positions, runway occupancy, and holding stack</p>
+          <p>10 NM localizer view, runway occupancy, and holding stack</p>
         </div>
         <span id="runwayStatus" class="pill">RWY —</span>
       </div>
