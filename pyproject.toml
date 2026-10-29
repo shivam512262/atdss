@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atdss-sim"
+version = "0.1.0"
+description = "AT-DSS simulation milestone: FCFS/priority arrival sequencing, wake separation, conflict-risk analysis, and traffic-scaling experiments."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "AT-DSS Project" }]
+dependencies = [
+    "simpy>=4.1",
+    "numpy>=1.26",
+    "PyYAML>=6.0",
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

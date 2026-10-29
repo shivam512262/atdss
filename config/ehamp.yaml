@@ -1,0 +1,136 @@
+# EHAM Airport Configuration (Amsterdam Schiphol)
+# Single runway 06/24 (used as 24 for arrivals typically)
+
+airport:
+  icao: "EHAM"
+  name: "Amsterdam Schiphol"
+  runways:
+    - id: "24"
+      heading: 240
+      length_m: 3800
+      width_m: 60
+      # Used for arrivals in typical westerly operations
+      arrival_runway: true
+    - id: "06"
+      heading: 60
+      length_m: 3800
+      width_m: 60
+      arrival_runway: false
+
+# Wake Turbulence Categories (ICAO Doc 4444)
+wake_categories:
+  H: "Heavy"      # MTOW >= 136,000 kg
+  M: "Medium"     # 7,000 kg < MTOW < 136,000 kg
+  L: "Light"      # MTOW <= 7,000 kg
+
+# Separation Minima (NM) - ICAO Doc 4444 Table 4-1
+# Rows = Leading aircraft, Columns = Following aircraft
+separation_nm:
+  H:
+    H: 4.0
+    M: 5.0
+    L: 6.0
+  M:
+    H: 3.0
+    M: 3.0
+    L: 5.0
+  L:
+    H: 3.0
+    M: 3.0
+    L: 3.0
+
+# Approach Parameters
+approach:
+  final_approach_fix_distance_nm: 10.0    # Distance from threshold to FAF
+  final_approach_speed_kts: 140           # Typical final approach speed
+  approach_angle_deg: 3.0                 # Glideslope angle
+  threshold_crossing_height_ft: 50        # Height at runway threshold
+
+# Fleet Mix (typical European hub)
+fleet_mix:
+  H: 0.30   # 30% Heavy (B777, A350, B747, etc.)
+  M: 0.60   # 60% Medium (A320, B737, etc.)
+  L: 0.10   # 10% Light (regional jets, turboprops)
+
+# Aircraft Type Mapping (ICAO code -> OpenAP aircraft)
+aircraft_types:
+  # Heavy
+  B777: { wake: "H", openap: "B777-300ER", mass_kg: 250000 }
+  B77W: { wake: "H", openap: "B777-300ER", mass_kg: 250000 }
+  B77L: { wake: "H", openap: "B777-200LR", mass_kg: 250000 }
+  A359: { wake: "H", openap: "A350-900", mass_kg: 250000 }
+  A35K: { wake: "H", openap: "A350-1000", mass_kg: 300000 }
+  B748: { wake: "H", openap: "B747-8", mass_kg: 400000 }
+  B744: { wake: "H", openap: "B747-400", mass_kg: 400000 }
+  A388: { wake: "H", openap: "A380-800", mass_kg: 500000 }
+  
+  # Medium
+  A320: { wake: "M", openap: "A320-200", mass_kg: 78000 }
+  A321: { wake: "M", openap: "A321-200", mass_kg: 93000 }
+  A319: { wake: "M", openap: "A319-100", mass_kg: 75000 }
+  B738: { wake: "M", openap: "B737-800", mass_kg: 79000 }
+  B739: { wake: "M", openap: "B737-900", mass_kg: 85000 }
+  B737: { wake: "M", openap: "B737-700", mass_kg: 70000 }
+  A220: { wake: "M", openap: "A220-300", mass_kg: 63000 }
+  E190: { wake: "M", openap: "E190", mass_kg: 52000 }
+  E195: { wake: "M", openap: "E195-E2", mass_kg: 62000 }
+  
+  # Light
+  CRJ9: { wake: "L", openap: "CRJ-900", mass_kg: 41000 }
+  CRJ7: { wake: "L", openap: "CRJ-700", mass_kg: 36000 }
+  DH8D: { wake: "L", openap: "DH8D", mass_kg: 29000 }
+  AT76: { wake: "L", openap: "ATR72", mass_kg: 23000 }
+
+# Default aircraft if type not found
+default_aircraft: { wake: "M", openap: "A320-200", mass_kg: 78000 }
+
+# Simulation Parameters
+simulation:
+  time_step_sec: 1.0
+  max_simulation_time_sec: 7200  # 2 hours (single-run default; experiments extend this)
+  warmup_period_sec: 300         # 5 min warmup before measurements
+  runway_occupancy_sec: 40       # time on runway after touchdown
+  taxi_time_sec: 300             # taxi to gate (not runway-blocking)
+  
+# Traffic Generation
+traffic:
+  arrival_rate_per_hour: 40      # Base rate (adjustable per experiment)
+  peak_multiplier: 1.5           # Peak hour multiplier
+  peak_start_hour: 7             # 07:00 local
+  peak_end_hour: 10              # 10:00 local
+  
+# GA Parameters (can be overridden per experiment)
+ga:
+  population_size: 100
+  generations: 200
+  tournament_size: 3
+  crossover_prob: 0.9
+  mutation_prob: 0.1
+  elitism_ratio: 0.05
+  early_stopping_generations: 30
+  random_seed: 42
+
+# Fitness Weights (W1, W2, W3 for Delay, Fuel, Conflict)
+fitness_weights:
+  delay: 0.4
+  fuel: 0.3
+  conflict: 0.3
+
+# Conflict Detection
+conflict:
+  horizontal_separation_nm: 2.5   # Minimum horizontal separation
+  vertical_separation_ft: 1000    # Minimum vertical separation
+  cpa_lookahead_sec: 300          # Time horizon for CPA calculation
+  conflict_margin_ratio: 1.20     # gap below 1.2x required separation is "tight"
+
+# Fuel proxy for the simulation milestone. OpenAP integration is deferred.
+# Values are holding fuel-flow estimates in kg/second by wake category.
+fuel_proxy:
+  H: 1.20
+  M: 0.50
+  L: 0.20
+  
+# Disruption Scenarios
+disruption:
+  runway_closure_time_sec: 1800   # 30 min into simulation
+  closure_duration_sec: 1800      # 30 min closure
