@@ -19,6 +19,8 @@ optimization.
 - Delay, throughput, separation, and holding-fuel-proxy metrics.
 - 100/250/500-arrival experiment with five replications.
 - CSV, Markdown, and PNG outputs.
+- Standalone HTML real-time animation with final-approach movement, runway
+  occupancy, holding queue, and live counters.
 - Automated tests.
 
 ## Evidence
@@ -29,7 +31,7 @@ Run from `S:\Code\BE project\atdss-code`:
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Current result: **10 passed**.
+Current result: **13 passed**.
 
 ```powershell
 .\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30
@@ -39,6 +41,16 @@ Current result: **10 passed**.
 ```powershell
 .\.venv\Scripts\python.exe -m atdss --compare --counts 100 250 500 --reps 5 --seed 42
 ```
+
+Generate the visual simulation:
+
+```powershell
+.\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual --open
+```
+
+The generated `results/simulation_fcfs_100.html` plays the arrival sequence in
+a browser. It shows the 10 NM final approach, wake-separation gaps, runway
+occupancy, holding queue, and live counters.
 
 ## Results snapshot
 
@@ -66,17 +78,19 @@ Files are in `results/`:
 
 1. Show the repository layout and state that this is a separate, git-ready
    implementation.
-2. Run the tests and show `10 passed`.
+2. Run the tests and show `13 passed`.
 3. Run one FCFS case and one priority case; point out the sequence table.
-4. Run the 100/250/500 experiment and show the CSV and plots.
-5. Explain the safety check: separation violations are zero because the
+4. Generate and open the HTML visual simulation; show aircraft moving along
+   final approach, the holding queue, and live counters.
+5. Run the 100/250/500 experiment and show the CSV and plots.
+6. Explain the safety check: separation violations are zero because the
    scheduler enforces the wake matrix.
-6. Explain the conflict-risk metric: it measures how often the original
+7. Explain the conflict-risk metric: it measures how often the original
    schedule was already below the required separation and therefore needed
    intervention.
-7. State clearly that the fuel number is a holding-fuel proxy, not OpenAP or
+8. State clearly that the fuel number is a holding-fuel proxy, not OpenAP or
    XGBoost output.
-8. State that the optimizer, XAI, and dashboard are the next milestones.
+9. State that the optimizer, XAI, and dashboard are the next milestones.
 
 ## Why this is roughly 30%
 
@@ -93,11 +107,12 @@ Files are in `results/`:
 | Metrics | Complete |
 | 100/250/500 experiment | Complete |
 | Plots and CSV outputs | Complete |
-| Tests | 10 passing |
+| Real-time HTML visual simulation | Complete |
+| Tests | 13 passing |
 | GA optimizer | Not started |
 | XAI/SHAP | Not started |
 | OpenAP/XGBoost fuel | Not started |
-| Dashboard | Not started |
+| Interactive dashboard | Not started |
 
 The 30% estimate refers to the project's implementation scope, not to a formal
 audit. The original simulation-only target was 15-20%; the added baselines,

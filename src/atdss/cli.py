@@ -10,6 +10,7 @@ import pandas as pd
 from .config import load_config
 from .experiments import run_single, run_traffic_scaling
 from .models import SimulationResult
+from .visualization import write_visualization
 
 
 def _print_single(result: SimulationResult, airport: str) -> None:
@@ -133,6 +134,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable the time-of-day peak multiplier for a single Poisson run",
     )
+    parser.add_argument(
+        "--visual",
+        action="store_true",
+        help="Generate a standalone HTML animation for the single run",
+    )
+    parser.add_argument(
+        "--visual-output",
+        type=Path,
+        default=None,
+        help="Output path for the HTML animation (default: results/simulation_<strategy>_<flights>.html)",
+    )
+    parser.add_argument(
+        "--open",
+        action="store_true",
+        help="Open the generated animation in the default browser",
+    )
     return parser
 
 
@@ -141,6 +158,8 @@ def main(argv: list[str] | None = None) -> int:
     config = load_config(args.config)
 
     if args.compare:
+        if args.visual:
+            raise SystemExit("--visual is only available for a single run, not --compare")
         dataframe, summary_path = run_traffic_scaling(
             config=config,
             counts=args.counts,
@@ -166,4 +185,19 @@ def main(argv: list[str] | None = None) -> int:
         arrival_rate_per_hour=args.rate,
     )
     _print_single(result, f"{config.icao} ({config.name})")
+
+    if args.visual:
+        visual_path = args.visual_output or (
+            args.output_dir / f"simulation_{args.strategy}_{args.flights}.html"
+        )
+        written = write_visualization(
+            config,
+            result,
+            visual_path,
+            open_browser=args.open,
+        )
+        print(f"Visual simulation written to: {written.resolve()}")
+        if not args.open:
+            print("Open that HTML file in any browser to play the animation.")
+
     return 0

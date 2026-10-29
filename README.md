@@ -27,15 +27,18 @@ demo sequence.
   violations, and runtime.
 - 100/250/500-arrival traffic-scaling experiment with 5 replications.
 - CSV, Markdown summary, and PNG plots.
+- Standalone HTML real-time animation of final approach, runway occupancy,
+  holding queue, and live metrics.
 - Pytest coverage for config loading, traffic generation, baseline ordering,
-  separation enforcement, conflict-risk detection, and simulation completion.
+  separation enforcement, conflict-risk detection, simulation completion, and
+  visualization output.
 
 ## What is deliberately not implemented yet
 
 - GA optimizer.
 - XAI / SHAP explanations.
 - OpenAP or XGBoost fuel burn.
-- Dashboard.
+- Interactive Streamlit dashboard (the standalone HTML animation is included).
 - Disruption scenarios.
 - Multi-airport or multi-runway operations.
 - Gate/taxi optimization.
@@ -65,6 +68,35 @@ Run one wake-priority case:
 
 ```powershell
 python -m atdss --strategy priority --flights 100 --seed 42 --rate 30
+```
+
+Generate the visual simulation:
+
+```powershell
+python -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual
+```
+
+Add `--open` to launch it automatically:
+
+```powershell
+python -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual --open
+```
+
+The visual simulation is a standalone HTML file. It needs no server and no
+additional Python package. Open the generated file in any browser. It shows:
+
+- aircraft moving along a 10 NM final approach in real time;
+- wake-category colours;
+- the separation gap between aircraft;
+- runway occupancy after touchdown;
+- the holding queue;
+- live landed, on-final, holding, and average-delay counters;
+- play/pause, reset, speed, and timeline controls.
+
+A deep link to a point on the timeline is also supported:
+
+```text
+results/simulation_fcfs_100.html?t=0.5
 ```
 
 Run the full 100/250/500 experiment. Each volume is placed inside the same
@@ -106,6 +138,8 @@ python -m pytest -q
 - `fig_delay_vs_traffic.png`: average delay with replication spread.
 - `fig_conflict_risk_vs_traffic.png`: conflict-risk pairs.
 - `fig_fuel_proxy_vs_traffic.png`: holding-fuel proxy.
+- `simulation_<strategy>_<flights>.html`: standalone visual simulation when
+  `--visual` is used.
 
 ## Layout
 
@@ -122,8 +156,10 @@ atdss-code/
     metrics.py            Delay, throughput, safety, and fuel-proxy metrics
     experiments.py        Replication runner and artifact writer
     plots.py              Matplotlib figures
+    visualization.py      Standalone HTML/Canvas animation
     cli.py                Command-line entry point
   tests/test_pipeline.py  End-to-end and unit checks
+  tests/test_visualization.py  Animation payload and HTML checks
 ```
 
 ## Design note: fixed demand window
