@@ -28,18 +28,16 @@
     <div class="top-controls">
       <button id="pauseBtn" class="btn btn-primary" type="button">Pause</button>
       <button id="resetBtn" class="btn" type="button">Reset</button>
-      <label class="speed-control">Speed
-        <select id="speedSelect" title="1× follows real time; higher values fast-forward the synthetic scenario">
-          <option value="1" selected>1× real time</option>
-          <option value="5">5×</option>
-          <option value="10">10×</option>
-          <option value="30">30×</option>
-          <option value="60">60×</option>
-          <option value="120">120×</option>
-          <option value="240">240×</option>
-          <option value="600">600×</option>
-        </select>
-      </label>
+      <div class="speed-control" role="group" aria-label="Playback speed">
+        <span class="speed-label">Speed</span>
+        <div class="speed-buttons" id="speedButtons">
+          <button type="button" class="speed-btn active" data-speed="1" aria-pressed="true" title="Normal speed: 1× real time">Normal 1×</button>
+          <button type="button" class="speed-btn" data-speed="5" aria-pressed="false">5×</button>
+          <button type="button" class="speed-btn" data-speed="10" aria-pressed="false">10×</button>
+          <button type="button" class="speed-btn" data-speed="30" aria-pressed="false">30×</button>
+          <button type="button" class="speed-btn" data-speed="60" aria-pressed="false">60×</button>
+        </div>
+      </div>
     </div>
   </header>
 

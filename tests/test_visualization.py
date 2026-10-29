@@ -54,6 +54,9 @@ def test_render_html_is_self_contained(result, config):
     assert "<title>Test animation</title>" in output
     assert "const DATA = {" in output
     assert "requestAnimationFrame" in output
+    assert 'id="speedButtons"' in output
+    assert "Normal 1×" in output
+    assert 'data-speed="1"' in output
     assert callsign in output
     assert "__DATA_JSON__" not in output
     assert "__PAGE_TITLE__" not in output

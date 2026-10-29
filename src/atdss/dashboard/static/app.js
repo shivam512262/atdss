@@ -10,8 +10,6 @@ const STATUS = {
   landed: { label: "Landed", color: "#7bd389" },
 };
 
-const SPEEDS = [1, 5, 10, 30, 60, 120, 240, 600];
-
 let snapshot = null;
 let receivedAt = 0;
 let selectedId = null;
@@ -96,15 +94,7 @@ function syncForm() {
   const active = document.activeElement;
   if (formInitialized && form.contains(active)) return;
 
-  const speedSelect = $("speedSelect");
-  const speed = Number(snapshot.scenario.speed);
-  if (![...speedSelect.options].some((option) => Number(option.value) === speed)) {
-    const option = document.createElement("option");
-    option.value = String(speed);
-    option.textContent = speed === 1 ? "1× real time" : `${speed}×`;
-    speedSelect.append(option);
-  }
-  if (active !== speedSelect) speedSelect.value = String(speed);
+  syncSpeedButtons(Number(snapshot.scenario.speed));
 
   if (!formInitialized) {
     $("flightsInput").value = snapshot.scenario.flights;
@@ -113,6 +103,25 @@ function syncForm() {
     $("rateInput").value = snapshot.scenario.rate;
     formInitialized = true;
   }
+}
+
+function syncSpeedButtons(speed) {
+  const container = $("speedButtons");
+  if (!container) return;
+  let activeButton = container.querySelector(`[data-speed="${speed}"]`);
+  if (!activeButton) {
+    activeButton = document.createElement("button");
+    activeButton.type = "button";
+    activeButton.className = "speed-btn";
+    activeButton.dataset.speed = String(speed);
+    activeButton.textContent = speed === 1 ? "Normal 1×" : `${speed}×`;
+    container.append(activeButton);
+  }
+  container.querySelectorAll(".speed-btn").forEach((button) => {
+    const active = button === activeButton;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
 }
 
 function setConnection(text, tone) {
@@ -1592,8 +1601,10 @@ function bindEvents() {
     postControl({ action: "reset" }, { clearSelection: true, message: "Scenario reset." })
   );
 
-  $("speedSelect").addEventListener("change", (event) => {
-    postControl({ action: "speed", value: Number(event.target.value) });
+  $("speedButtons").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-speed]");
+    if (!button) return;
+    postControl({ action: "speed", value: Number(button.dataset.speed) });
   });
 
   $("scenarioForm").addEventListener("submit", (event) => {

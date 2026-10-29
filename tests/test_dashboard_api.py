@@ -29,6 +29,8 @@ def test_index_and_static_assets(client):
     assert index.status_code == 200
     assert "AT-DSS Live Arrival Simulator" in index.text
     assert 'id="map"' in index.text
+    assert 'id="speedButtons"' in index.text
+    assert "Normal 1×" in index.text
     assert "Live airport map" in index.text
 
     script = client.get("/static/app.js")

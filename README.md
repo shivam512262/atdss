@@ -41,8 +41,10 @@ Start the dashboard:
 .\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --open
 ```
 
-By default the scenario plays at **1× real time**. Use `--speed 5` (or another
-value) only when you want to fast-forward a demo.
+By default the scenario plays at **Normal 1× real time**. Use the speed buttons
+(or `--speed 5`) only when you want to fast-forward a demo. For a shorter
+real-time demo, use `--flights 20`; 100 flights at Normal speed lasts several
+hours.
 
 If the `py` launcher is unavailable, create the environment with
 `python -m venv .venv`, using Python 3.12 on `PATH`.
@@ -166,7 +168,7 @@ not affect the tests.
 | Runway model | Single runway with occupancy time |
 | Dashboard | FastAPI + WebSocket + vanilla HTML/CSS/Canvas |
 | Experiments | 100/250/500 arrivals, 5 replications, fixed 12-hour window |
-| Tests | 25 passing |
+| Tests | 27 passing |
 | Data source | Synthetic only; no ADS-B/OpenSky feed |
 | Scope | Approximately 30% of the planned AT-DSS project |
 
@@ -180,7 +182,7 @@ parameters.
 
 ### Dashboard features
 
-- **Clock and playback:** pause/resume, speed control, reset.
+- **Clock and playback:** pause/resume, Normal 1× default, speed buttons, reset.
 - **Live airport map:** a real-airport view for VOCI/COK with the runway,
   terminal, localizer path, holding pattern, and moving arrival aircraft.
 - **Final-approach radar:** aircraft positions, distance from the threshold,
@@ -318,7 +320,13 @@ results/simulation_fcfs_100.html
 
 This is a standalone playback of one completed run, not the live dashboard. It
 shows aircraft moving along the 10 NM final approach, wake-category colours,
-separation gaps, runway occupancy, the holding queue, and live counters.
+separation gaps, runway occupancy, the arrival queue, and live counters.
+
+**Normal 1×** is selected by default, so the animation follows the synthetic
+timeline in real time. A 10 NM final approach takes about 4.3 minutes and runway
+occupancy about 40 seconds. Use the faster buttons only for demos. A 100-flight
+run at Normal speed lasts several hours; 20–30 flights is more practical for a
+real-time demonstration.
 
 Deep link to a point on the timeline:
 

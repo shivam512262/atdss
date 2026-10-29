@@ -143,6 +143,37 @@ button, input, select { font: inherit; }
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+.speed-label { white-space: nowrap; }
+.speed-buttons {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(6, 20, 32, 0.72);
+}
+.speed-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.speed-btn:hover { background: rgba(69, 214, 232, 0.10); color: var(--text); }
+.speed-btn.active {
+  background: rgba(69, 214, 232, 0.18);
+  border-color: rgba(69, 214, 232, 0.45);
+  color: #dcfbff;
+  box-shadow: inset 0 0 18px rgba(69, 214, 232, 0.08);
+}
 
 select, input {
   border: 1px solid var(--border);
@@ -412,6 +443,8 @@ tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .scenario-form { grid-template-columns: 1fr; }
   .scenario-form .btn-wide { grid-column: auto; }
   .detail-grid { grid-template-columns: 1fr; }
+  .speed-control { flex-wrap: wrap; }
+  .speed-buttons { flex-wrap: wrap; }
   .map-wrap { height: 360px; }
   .map-attribution { margin-left: 0; flex-basis: 100%; }
 }

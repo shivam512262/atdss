@@ -176,7 +176,17 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   button.primary { background: #123a52; border-color: #2d6b8d; color: #dff7ff; }
   input[type="range"] { accent-color: var(--accent); }
   .control-label { color: var(--muted); font-size: 12px; }
-  .speed-value { color: var(--text); font-variant-numeric: tabular-nums; min-width: 68px; }
+  .speed-buttons {
+    display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line);
+    border-radius: 10px; background: #0b1728; flex-wrap: wrap;
+  }
+  .speed-btn {
+    padding: 6px 10px; border: 1px solid transparent; border-radius: 7px;
+    background: transparent; color: var(--muted); font-size: 12px;
+    font-weight: 700; cursor: pointer;
+  }
+  .speed-btn:hover { background: #12243a; border-color: transparent; color: var(--text); }
+  .speed-btn.active { background: #123a52; border-color: #2d6b8d; color: #dff7ff; }
   .scrub { flex: 1; min-width: 180px; }
   .side { padding: 14px; }
   .side h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--accent); margin: 0 0 10px; }
@@ -227,9 +237,15 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
       <div class="controls">
         <button class="primary" id="play"></button>
         <button id="reset">Reset</button>
-        <label class="control-label" for="speed">Speed</label>
-        <input id="speed" type="range" min="30" max="1800" step="30" value="120">
-        <span class="speed-value" id="speedLabel">120x</span>
+        <span class="control-label">Speed</span>
+        <div class="speed-buttons" id="speedButtons" role="group" aria-label="Playback speed">
+          <button type="button" class="speed-btn active" data-speed="1" aria-pressed="true">Normal 1×</button>
+          <button type="button" class="speed-btn" data-speed="5" aria-pressed="false">5×</button>
+          <button type="button" class="speed-btn" data-speed="10" aria-pressed="false">10×</button>
+          <button type="button" class="speed-btn" data-speed="30" aria-pressed="false">30×</button>
+          <button type="button" class="speed-btn" data-speed="60" aria-pressed="false">60×</button>
+          <button type="button" class="speed-btn" data-speed="120" aria-pressed="false">120×</button>
+        </div>
         <input id="scrub" class="scrub" type="range" min="0" max="1000" value="0">
       </div>
       <div class="legend">
@@ -241,14 +257,20 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     </section>
 
     <aside class="side">
-      <h2>Holding queue</h2>
+      <h2>Next arrivals</h2>
       <div class="queue" id="queue"></div>
       <h2 style="margin-top:18px">Run facts</h2>
       <div class="note" id="facts"></div>
       <div class="note">
         Aircraft move along a 10 NM final approach at the configured approach
         speed. The horizontal gap between aircraft reflects the wake-separation
-        requirement. Holding aircraft are waiting for their assigned landing slot.
+        requirement. Aircraft in the arrival queue are waiting for their
+        assigned landing slot.
+      </div>
+      <div class="note">
+        <strong>Normal (1×)</strong> is real-time synthetic playback: the final
+        approach takes about 4.3 minutes and runway occupancy about 40 seconds.
+        Use faster buttons only for demos. This is not live ADS-B data.
       </div>
       <div class="generated">Generated __GENERATED_AT__</div>
     </aside>
@@ -266,13 +288,14 @@ const DURATION = Math.max(1, END - START);
 const FINAL = R.final_approach_duration_sec;
 const SPEED_NM_S = R.approach_speed_nm_per_sec;
 const OCC = R.occupancy_sec;
+// Match the live dashboard's 15-minute airborne holding window.
+const HOLDING_WINDOW = 15 * 60;
 
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 const playButton = document.getElementById("play");
 const resetButton = document.getElementById("reset");
-const speedInput = document.getElementById("speed");
-const speedLabel = document.getElementById("speedLabel");
+const speedButtons = document.getElementById("speedButtons");
 const scrub = document.getElementById("scrub");
 const clockEl = document.getElementById("clock");
 const landedEl = document.getElementById("landed");
@@ -285,7 +308,7 @@ const factsEl = document.getElementById("facts");
 
 let simTime = START;
 let playing = true;
-let speed = Number(speedInput.value);
+let speed = 1;
 let lastFrame = performance.now();
 let lastSidebarUpdate = 0;
 let canvasW = 0, canvasH = 0;
@@ -306,7 +329,8 @@ document.getElementById("strategy").textContent = DATA.strategy.toUpperCase() + 
 document.getElementById("facts").textContent =
   "Approach speed: " + R.approach_speed_kts.toFixed(0) + " kt. " +
   "Final approach time: " + FINAL.toFixed(0) + " s. " +
-  "Runway occupancy: " + OCC.toFixed(0) + " s.";
+  "Runway occupancy: " + OCC.toFixed(0) + " s. " +
+  "Normal playback: 1× real time.";
 
 function sizeCanvas() {
   const rect = canvas.getBoundingClientRect();
@@ -485,7 +509,11 @@ function drawScene() {
 
 function updateStats(onFinal) {
   const landed = A.filter(a => a.actual <= simTime).length;
-  const holding = A.filter(a => a.actual > simTime && simTime < a.actual - FINAL).length;
+  const holding = A.filter(a =>
+    a.actual > simTime &&
+    simTime < a.actual - FINAL &&
+    simTime >= a.scheduled - HOLDING_WINDOW
+  ).length;
   const landedDelays = A.filter(a => a.actual <= simTime).map(a => a.delay);
   const avgDelay = landedDelays.length
     ? landedDelays.reduce((s, v) => s + v, 0) / landedDelays.length
@@ -558,9 +586,15 @@ resetButton.addEventListener("click", () => {
   drawScene();
   updateQueue();
 });
-speedInput.addEventListener("input", () => {
-  speed = Number(speedInput.value);
-  speedLabel.textContent = speed + "x";
+speedButtons.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-speed]");
+  if (!button) return;
+  speed = Number(button.dataset.speed) || 1;
+  speedButtons.querySelectorAll(".speed-btn").forEach((item) => {
+    const active = item === button;
+    item.classList.toggle("active", active);
+    item.setAttribute("aria-pressed", active ? "true" : "false");
+  });
 });
 scrub.addEventListener("input", () => {
   scrubbing = true;

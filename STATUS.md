@@ -20,8 +20,8 @@ gate/taxi optimization.
 - Delay, throughput, separation, and holding-fuel-proxy metrics.
 - 100/250/500-arrival experiment with five replications.
 - CSV, Markdown, and PNG outputs.
-- Standalone HTML real-time animation with final-approach movement, runway
-  occupancy, holding queue, and live counters.
+- Standalone HTML real-time animation with Normal 1× default playback,
+  final-approach movement, runway occupancy, arrival queue, and live counters.
 - Live synthetic dashboard: FastAPI/WebSocket streaming, real-time 1× default
   playback, real-airport map view for VOCI/COK, final-approach radar, holding
   stack, sortable flight board, runway timeline, alerts, flight detail drawer,
@@ -56,12 +56,13 @@ Generate the visual simulation:
 
 The generated `results/simulation_fcfs_100.html` plays the arrival sequence in
 a browser. It shows the 10 NM final approach, wake-separation gaps, runway
-occupancy, holding queue, and live counters.
+occupancy, arrival queue, and live counters. Normal 1× real-time playback is
+selected by default; faster buttons are for demos.
 
 Launch the live synthetic dashboard:
 
 ```powershell
-.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --open
 ```
 
 The dashboard runs at <http://127.0.0.1:8000> and streams live state over a
@@ -99,9 +100,11 @@ Files are in `results/`:
    airport map with aircraft moving through en-route, hold, final, runway, and
    taxi phases, the final-approach radar, holding stack, flight board, runway
    timeline, alerts, and the click-through detail drawer. Demonstrate
-   pause/resume, speed, reset, and scenario regeneration.
+   pause/resume, Normal 1× playback, the speed buttons, reset, and scenario
+   regeneration.
 5. Generate and open the standalone HTML visual simulation; show aircraft
-   moving along final approach, the holding queue, and live counters.
+   moving along final approach, the arrival queue, Normal 1× playback, and live
+   counters.
 6. Run the 100/250/500 experiment and show the CSV and plots.
 7. Explain the safety check: separation violations are zero because the
    scheduler enforces the wake matrix.
@@ -131,7 +134,7 @@ Files are in `results/`:
 | Real-time HTML visual simulation | Complete |
 | Live FastAPI/WebSocket dashboard | Complete (synthetic) |
 | REST controls and scenario regeneration | Complete |
-| Tests | 25 passing |
+| Tests | 27 passing |
 | GA optimizer | Not started |
 | XAI/SHAP | Not started |
 | OpenAP/XGBoost fuel | Not started |
