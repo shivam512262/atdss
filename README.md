@@ -38,8 +38,11 @@ python -m venv .venv
 Start the dashboard:
 
 ```powershell
-.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --open
 ```
+
+By default the scenario plays at **1× real time**. Use `--speed 5` (or another
+value) only when you want to fast-forward a demo.
 
 If the `py` launcher is unavailable, create the environment with
 `python -m venv .venv`, using Python 3.12 on `PATH`.
@@ -57,7 +60,7 @@ python3.12 -m venv .venv
 Start the dashboard:
 
 ```bash
-./.venv/bin/python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+./.venv/bin/python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --open
 ```
 
 If `python3.12` is not available, install Python 3.12 or use the command name
@@ -146,7 +149,7 @@ not step the SimPy event loop in real time.
 Expected result:
 
 ```text
-26 passed
+27 passed
 ```
 
 A third-party deprecation warning from Starlette/httpx may also appear; it does
@@ -170,9 +173,10 @@ not affect the tests.
 ## Live dashboard
 
 Each scenario is generated once by the existing SimPy pipeline. A live state
-layer then replays that scenario in simulated time and updates flight statuses,
-positions, runway occupancy, alerts, and metrics. Pressing **Regenerate** runs a
-new simulation with the selected parameters.
+layer then replays that scenario in simulated time at **1× real time by
+default** and updates flight statuses, positions, runway occupancy, alerts, and
+metrics. Pressing **Regenerate** runs a new simulation with the selected
+parameters.
 
 ### Dashboard features
 
@@ -199,7 +203,7 @@ navigation.
 |---|---|
 | Pause / Resume | Stop or restart simulated time |
 | Reset | Restart the current scenario from the beginning |
-| Speed | Change simulated seconds per wall-clock second |
+| Speed | Playback rate; `1×` follows real time, higher values fast-forward |
 | Regenerate | Generate a new scenario from the form parameters |
 | Status filter | Show only scheduled, en-route, holding, final, or landed flights |
 | Search | Filter by callsign, aircraft type, origin, or wake category |
@@ -216,7 +220,7 @@ navigation.
 | `--seed` | `42` | Synthetic traffic seed |
 | `--strategy` | `fcfs` | `fcfs` or `priority` |
 | `--rate` | `30` | Arrival demand in flights per hour |
-| `--speed` | `60` | Simulated seconds per wall-clock second |
+| `--speed` | `1` | Playback rate; `1` = real time |
 | `--open` | off | Open the dashboard in the default browser |
 | `--log-level` | `info` | Uvicorn log level |
 
@@ -250,7 +254,7 @@ Example control requests:
 
 ```json
 {"action": "pause"}
-{"action": "speed", "value": 120}
+{"action": "speed", "value": 1}
 {"action": "regenerate", "flights": 250, "seed": 7, "strategy": "priority", "rate": 30}
 ```
 

@@ -101,7 +101,7 @@ function syncForm() {
   if (![...speedSelect.options].some((option) => Number(option.value) === speed)) {
     const option = document.createElement("option");
     option.value = String(speed);
-    option.textContent = `${speed}×`;
+    option.textContent = speed === 1 ? "1× real time" : `${speed}×`;
     speedSelect.append(option);
   }
   if (active !== speedSelect) speedSelect.value = String(speed);

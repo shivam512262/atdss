@@ -31,6 +31,11 @@ def flight_by_id(snapshot, aircraft_id):
     return next(item for item in snapshot["flights"] if item["id"] == aircraft_id)
 
 
+def test_default_speed_is_real_time(config):
+    simulation = LiveSimulation(config, flights=10, seed=1, rate=30.0)
+    assert simulation.speed == pytest.approx(1.0)
+
+
 def test_snapshot_is_complete_and_json_serializable(simulation):
     snapshot = simulation.snapshot()
 

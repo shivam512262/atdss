@@ -42,7 +42,7 @@ class LiveSimulation:
         flights: int = 100,
         seed: int = 42,
         rate: float = 30.0,
-        speed: float = 60.0,
+        speed: float = 1.0,
     ) -> None:
         self.config = config
         self.strategy = str(strategy).lower()

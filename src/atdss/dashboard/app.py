@@ -48,7 +48,7 @@ def create_app(
     seed: int = 42,
     strategy: str = "fcfs",
     rate: float = 30.0,
-    speed: float = 60.0,
+    speed: float = 1.0,
     start_ticker: bool = True,
 ) -> FastAPI:
     """Build the dashboard app around one live simulation state."""

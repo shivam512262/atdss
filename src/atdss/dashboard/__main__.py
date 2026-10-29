@@ -36,8 +36,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--speed",
         type=float,
-        default=60.0,
-        help="Initial simulated seconds per wall-clock second.",
+        default=1.0,
+        help="Initial simulated seconds per wall-clock second (1.0 = real time).",
     )
     parser.add_argument(
         "--open",

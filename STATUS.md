@@ -22,10 +22,11 @@ gate/taxi optimization.
 - CSV, Markdown, and PNG outputs.
 - Standalone HTML real-time animation with final-approach movement, runway
   occupancy, holding queue, and live counters.
-- Live synthetic dashboard: FastAPI/WebSocket streaming, real-airport map view
-  for VOCI/COK, final-approach radar, holding stack, sortable flight board,
-  runway timeline, alerts, flight detail drawer, pause/resume, speed control,
-  reset, and scenario regeneration.
+- Live synthetic dashboard: FastAPI/WebSocket streaming, real-time 1× default
+  playback, real-airport map view for VOCI/COK, final-approach radar, holding
+  stack, sortable flight board, runway timeline, alerts, flight detail drawer,
+  pause/resume, optional fast-forward speed control, reset, and scenario
+  regeneration.
 - Automated tests.
 
 ## Evidence
@@ -36,7 +37,7 @@ Run from `S:\Code\BE project\atdss-code`:
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Current result: **26 passed**.
+Current result: **27 passed**.
 
 ```powershell
 .\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30
@@ -92,7 +93,7 @@ Files are in `results/`:
 
 1. Show the repository layout and state that this is a separate, git-ready
    implementation.
-2. Run the tests and show `26 passed`.
+2. Run the tests and show `27 passed`.
 3. Run one FCFS case and one priority case; point out the sequence table.
 4. Launch the live dashboard and show the clock advancing, the VOCI/COK
    airport map with aircraft moving through en-route, hold, final, runway, and
