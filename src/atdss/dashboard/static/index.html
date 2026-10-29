@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AT-DSS Live Arrival Simulator</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">AT<span>·</span>DSS</div>
+      <div>
+        <h1>Live Arrival Simulator</h1>
+        <p id="airportName">Loading airport…</p>
+      </div>
+    </div>
+
+    <div class="clockbox">
+      <span class="eyebrow">Simulated UTC</span>
+      <strong id="clock">00:00:00</strong>
+      <span id="connection" class="connection">connecting</span>
+    </div>
+
+    <div class="top-controls">
+      <button id="pauseBtn" class="btn btn-primary" type="button">Pause</button>
+      <button id="resetBtn" class="btn" type="button">Reset</button>
+      <label class="speed-control">Speed
+        <select id="speedSelect">
+          <option value="1">1×</option>
+          <option value="5">5×</option>
+          <option value="10">10×</option>
+          <option value="30">30×</option>
+          <option value="60" selected>60×</option>
+          <option value="120">120×</option>
+          <option value="240">240×</option>
+          <option value="600">600×</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <section class="stats" aria-label="Live metrics">
+    <article class="stat">
+      <span class="stat-label">Landed</span>
+      <strong id="statLanded">0</strong>
+      <small id="statTotal">of 0 flights</small>
+    </article>
+    <article class="stat">
+      <span class="stat-label">On final</span>
+      <strong id="statFinal">0</strong>
+      <small id="statRunway">runway free</small>
+    </article>
+    <article class="stat">
+      <span class="stat-label">Holding</span>
+      <strong id="statHolding">0</strong>
+      <small>aircraft in stack</small>
+    </article>
+    <article class="stat">
+      <span class="stat-label">En route</span>
+      <strong id="statEnRoute">0</strong>
+      <small id="statScheduled">0 scheduled</small>
+    </article>
+    <article class="stat">
+      <span class="stat-label">Average delay</span>
+      <strong id="statDelay">0s</strong>
+      <small>landed aircraft</small>
+    </article>
+    <article class="stat stat-risk">
+      <span class="stat-label">Conflict risk</span>
+      <strong id="statRisk">0</strong>
+      <small id="statViolations">0 separation violations</small>
+    </article>
+  </section>
+
+  <main class="layout">
+    <section class="panel radar-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Final approach</h2>
+          <p>Live positions, runway occupancy, and holding stack</p>
+        </div>
+        <span id="runwayStatus" class="pill">RWY —</span>
+      </div>
+      <div class="canvas-wrap radar-wrap">
+        <canvas id="radar" aria-label="Final approach radar"></canvas>
+      </div>
+      <div class="legend">
+        <span><i class="dot final"></i>Final</span>
+        <span><i class="dot holding"></i>Holding</span>
+        <span><i class="dot landed"></i>Landed</span>
+        <span><i class="line"></i>10 NM final</span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel alerts-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Alerts</h2>
+            <p>Live separation and queue warnings</p>
+          </div>
+          <span id="alertCount" class="pill">0</span>
+        </div>
+        <div id="alerts" class="alerts"></div>
+      </section>
+
+      <section class="panel scenario-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Scenario</h2>
+            <p>Generate a new synthetic traffic sample</p>
+          </div>
+        </div>
+        <form id="scenarioForm" class="scenario-form">
+          <label>Flights <input id="flightsInput" type="number" min="10" max="1000" step="10" value="100"></label>
+          <label>Seed <input id="seedInput" type="number" value="42"></label>
+          <label>Strategy
+            <select id="strategySelect">
+              <option value="fcfs">FCFS</option>
+              <option value="priority">Wake priority</option>
+            </select>
+          </label>
+          <label>Rate / hour <input id="rateInput" type="number" min="1" max="120" step="1" value="30"></label>
+          <button type="submit" class="btn btn-primary btn-wide">Regenerate</button>
+        </form>
+      </section>
+    </aside>
+  </main>
+
+  <section class="panel board-panel">
+    <div class="panel-head board-head">
+      <div>
+        <h2>Flight board</h2>
+        <p id="boardSummary">All arrivals in sequence order</p>
+      </div>
+      <div class="board-controls">
+        <input id="searchInput" type="search" placeholder="Search callsign, type, origin…" autocomplete="off">
+        <select id="filterSelect">
+          <option value="all">All statuses</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="en_route">En route</option>
+          <option value="holding">Holding</option>
+          <option value="final">Final</option>
+          <option value="landed">Landed</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="flightTable">
+        <thead>
+          <tr>
+            <th data-sort="sequence_position" class="num">#</th>
+            <th data-sort="callsign">Flight</th>
+            <th data-sort="type">Type</th>
+            <th data-sort="wake">Wake</th>
+            <th data-sort="origin">Origin</th>
+            <th data-sort="scheduled">Scheduled</th>
+            <th data-sort="eta">ETA</th>
+            <th data-sort="actual">Actual</th>
+            <th data-sort="status">Status</th>
+            <th data-sort="delay" class="num">Delay</th>
+            <th data-sort="conflict_risk" class="num">Risk</th>
+          </tr>
+        </thead>
+        <tbody id="flightBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel timeline-panel">
+    <div class="panel-head">
+      <div>
+        <h2>Runway timeline</h2>
+        <p>Next arrivals: scheduled marker, assigned slot, and actual landing</p>
+      </div>
+      <div class="legend compact">
+        <span><i class="dot scheduled"></i>Scheduled</span>
+        <span><i class="slot"></i>Assigned slot</span>
+        <span><i class="dot landed"></i>Actual</span>
+      </div>
+    </div>
+    <div class="canvas-wrap timeline-wrap">
+      <canvas id="timeline" aria-label="Runway timeline"></canvas>
+    </div>
+  </section>
+
+  <aside id="detailPanel" class="detail-panel" aria-live="polite">
+    <button id="closeDetail" class="close-btn" type="button" aria-label="Close flight detail">×</button>
+    <span class="eyebrow">Flight detail</span>
+    <h2 id="detailTitle">Select a flight</h2>
+    <div id="detailBody" class="detail-body">
+      <p class="muted">Click any row in the flight board to inspect schedule, separation, and live position.</p>
+    </div>
+  </aside>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

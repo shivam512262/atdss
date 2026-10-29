@@ -7,6 +7,27 @@ import random
 from .config import AirportConfig, WakeCategory
 from .models import Aircraft
 
+_ORIGINS = (
+    "EGLL",
+    "EDDF",
+    "LFPG",
+    "LEMD",
+    "LIRF",
+    "LSZH",
+    "EKCH",
+    "ESSA",
+    "ENGM",
+    "EBBR",
+)
+_AIRLINE_PREFIXES = ("KL", "HV", "BA", "LH", "AF", "LX", "SK", "AY")
+
+
+def _arrival_runway(config: AirportConfig) -> str:
+    for runway in config.raw.get("airport", {}).get("runways", []):
+        if runway.get("arrival_runway"):
+            return str(runway.get("id", "24"))
+    return "24"
+
 
 def generate_traffic(
     config: AirportConfig,
@@ -77,12 +98,17 @@ def generate_traffic(
         for wake in wake_categories
     }
 
+    runway = _arrival_runway(config)
     aircraft: list[Aircraft] = []
     for index, scheduled_time in enumerate(scheduled_times):
         wake = rng.choices(wake_categories, weights=weights, k=1)[0]
         pool = pools.get(wake) or [config.default_aircraft.icao_type]
         icao_type = rng.choice(pool)
         info = config.aircraft_info(icao_type)
+        flight_number = (
+            f"{_AIRLINE_PREFIXES[index % len(_AIRLINE_PREFIXES)]}{1000 + index}"
+        )
+        origin = _ORIGINS[index % len(_ORIGINS)]
 
         aircraft.append(
             Aircraft(
@@ -90,7 +116,10 @@ def generate_traffic(
                 icao_type=info.icao_type,
                 wake=info.wake,
                 scheduled_arrival_sec=scheduled_time,
-                callsign=f"{info.icao_type}{index:04d}",
+                callsign=flight_number,
+                flight_number=flight_number,
+                origin=origin,
+                runway=runway,
             )
         )
 

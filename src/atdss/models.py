@@ -24,6 +24,9 @@ class Aircraft:
     wake: WakeCategory
     scheduled_arrival_sec: float
     callsign: str = ""
+    flight_number: str = ""
+    origin: str = ""
+    runway: str = "24"
     assigned_landing_sec: float | None = None
     actual_landing_sec: float | None = None
     sequence_position: int = -1

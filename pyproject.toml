@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "atdss-code"
 version = "0.1.0"
-description = "AT-DSS simulation milestone: FCFS/priority arrival sequencing, wake separation, conflict-risk analysis, and traffic-scaling experiments."
+description = "AT-DSS simulation milestone: FCFS/priority arrival sequencing, wake separation, conflict-risk analysis, traffic-scaling experiments, and a live synthetic dashboard."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "AT-DSS Project" }]
@@ -15,13 +15,21 @@ dependencies = [
     "PyYAML>=6.0",
     "pandas>=2.0",
     "matplotlib>=3.8",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+atdss-dashboard = "atdss.dashboard.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"atdss.dashboard" = ["static/*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

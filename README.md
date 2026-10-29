@@ -2,8 +2,9 @@
 
 This repository contains the simulation-first slice of the AT-DSS (AI-assisted
 airport arrival sequencing decision-support) project. It is a standalone,
-runnable package that demonstrates the baseline arrival-sequencing pipeline
-before the GA optimizer, XAI layer, and dashboard are added.
+runnable package that demonstrates the baseline arrival-sequencing pipeline and
+a live synthetic operations dashboard. The GA optimizer and XAI layer remain
+future work.
 
 See `STATUS.md` for the milestone checklist, results snapshot, and a suggested
 demo sequence.
@@ -29,16 +30,24 @@ demo sequence.
 - CSV, Markdown summary, and PNG plots.
 - Standalone HTML real-time animation of final approach, runway occupancy,
   holding queue, and live metrics.
+- Live synthetic operations dashboard served by FastAPI and WebSocket:
+  - final-approach radar with aircraft positions and holding stack;
+  - sortable, searchable flight board with schedule, ETA, status, and delay;
+  - runway timeline with scheduled, assigned, and actual landing markers;
+  - live alerts for separation risk, queue build-up, and runway occupancy;
+  - click-through flight detail panel;
+  - pause/resume, speed control, reset, and scenario regeneration.
 - Pytest coverage for config loading, traffic generation, baseline ordering,
-  separation enforcement, conflict-risk detection, simulation completion, and
-  visualization output.
+  separation enforcement, conflict-risk detection, simulation completion,
+  visualization output, live state, REST controls, and WebSocket streaming.
 
 ## What is deliberately not implemented yet
 
 - GA optimizer.
 - XAI / SHAP explanations.
 - OpenAP or XGBoost fuel burn.
-- Interactive Streamlit dashboard (the standalone HTML animation is included).
+- Real ADS-B/OpenSky ingestion. The live dashboard is synthetic and does not
+  connect to an external data feed.
 - Disruption scenarios.
 - Multi-airport or multi-runway operations.
 - Gate/taxi optimization.
@@ -99,6 +108,42 @@ A deep link to a point on the timeline is also supported:
 results/simulation_fcfs_100.html?t=0.5
 ```
 
+## Live dashboard
+
+Start the synthetic live simulator with 100 flights, 60 simulated seconds per
+wall-clock second, and open the browser automatically:
+
+```powershell
+python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+```
+
+Or run it without opening a browser:
+
+```powershell
+python -m atdss.dashboard --flights 100 --seed 42 --rate 30
+```
+
+Then open <http://127.0.0.1:8000>. The dashboard streams a snapshot over a
+WebSocket every 0.5 seconds and exposes REST controls:
+
+- `GET /api/state` — complete dashboard snapshot;
+- `GET /api/flights` — flight rows;
+- `GET /api/metrics` — aggregate metrics;
+- `POST /api/control` — pause, resume, toggle, speed, reset, seek, regenerate;
+- `POST /api/scenario` — generate a new traffic sample;
+- `WS /ws` — live snapshot stream.
+
+Useful CLI options include `--strategy fcfs|priority`, `--host`, `--port`,
+`--config`, and `--speed`. The dashboard is also usable as a console script
+after installation:
+
+```powershell
+atdss-dashboard --flights 100 --open
+```
+
+The live dashboard is a synthetic simulator view. It does not ingest ADS-B,
+OpenSky, or airport operational data.
+
 Run the full 100/250/500 experiment. Each volume is placed inside the same
 12-hour demand window, so the volumes correspond to roughly 8, 21, and 42
 arrivals/hour:
@@ -158,8 +203,15 @@ atdss-code/
     plots.py              Matplotlib figures
     visualization.py      Standalone HTML/Canvas animation
     cli.py                Command-line entry point
+    dashboard/            Live FastAPI/WebSocket dashboard
+      state.py            Live clock, status transitions, snapshots, controls
+      app.py              REST API, WebSocket stream, static file serving
+      __main__.py         python -m atdss.dashboard entry point
+      static/             Vanilla HTML/CSS/Canvas dashboard
   tests/test_pipeline.py  End-to-end and unit checks
   tests/test_visualization.py  Animation payload and HTML checks
+  tests/test_dashboard_state.py  Live state and status-transition checks
+  tests/test_dashboard_api.py    REST, static-asset, and WebSocket checks
 ```
 
 ## Design note: fixed demand window
