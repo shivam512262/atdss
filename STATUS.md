@@ -23,7 +23,7 @@ optimization.
 
 ## Evidence
 
-Run from `S:\Code\BE project\atdss-sim`:
+Run from `S:\Code\BE project\atdss-code`:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q

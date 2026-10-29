@@ -110,7 +110,7 @@ python -m pytest -q
 ## Layout
 
 ```text
-atdss-sim/
+atdss-code/
   config/ehamp.yaml       Airport, separation, traffic, and proxy settings
   src/atdss/
     config.py             YAML loading and typed airport config

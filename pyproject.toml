@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "atdss-sim"
+name = "atdss-code"
 version = "0.1.0"
 description = "AT-DSS simulation milestone: FCFS/priority arrival sequencing, wake separation, conflict-risk analysis, and traffic-scaling experiments."
 readme = "README.md"

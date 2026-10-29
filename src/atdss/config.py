@@ -82,7 +82,7 @@ def load_config(path: str | Path | None = None) -> AirportConfig:
     if not config_path.exists():
         raise FileNotFoundError(
             f"Airport config not found: {config_path}. "
-            "Run commands from the atdss-sim project root or pass --config."
+            "Run commands from the atdss-code project root or pass --config."
         )
 
     with config_path.open("r", encoding="utf-8") as handle:
