@@ -22,16 +22,48 @@ suggested demo sequence.
 
 ## Run it
 
-### Windows: if this project is already set up
+Run every command from the repository root. A fresh clone needs the one-time
+setup step first.
 
-Open PowerShell and run these commands from the repository root:
+### Windows (PowerShell)
+
+One-time setup:
 
 ```powershell
-cd "S:\Code\BE project\atdss-code"
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+```
+
+Start the dashboard:
+
+```powershell
 .\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
 ```
 
-The dashboard opens at:
+If the `py` launcher is unavailable, create the environment with
+`python -m venv .venv`, using Python 3.12 on `PATH`.
+
+### macOS / Linux
+
+One-time setup:
+
+```bash
+python3.12 -m venv .venv
+./.venv/bin/python -m pip install --upgrade pip
+./.venv/bin/python -m pip install -e ".[dev]"
+```
+
+Start the dashboard:
+
+```bash
+./.venv/bin/python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+```
+
+If `python3.12` is not available, install Python 3.12 or use the command name
+that points to Python 3.12 on your system.
+
+### Dashboard URL
 
 ```text
 http://127.0.0.1:8000
@@ -40,76 +72,43 @@ http://127.0.0.1:8000
 If the browser does not open automatically, open that URL manually. Stop the
 server with `Ctrl+C`.
 
-### Windows: first-time setup
+### If you see `No module named 'atdss'`
 
-Install Python 3.12, then run:
+The package is installed into this repository's `.venv`, not a global Python
+installation or another project's environment. Make sure you are in the
+repository root and use the explicit interpreter paths above.
 
-```powershell
-cd "S:\Code\BE project\atdss-code"
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
-```
-
-Replace the `cd` path with your own checkout location if it is different. If the
-`py` launcher is unavailable, use `python -m venv .venv` with Python 3.12 on
-`PATH`.
-
-### macOS / Linux
-
-```bash
-cd path/to/atdss-code
-python3.12 -m venv .venv
-./.venv/bin/python -m pip install --upgrade pip
-./.venv/bin/python -m pip install -e ".[dev]"
-./.venv/bin/python -m pytest -q
-./.venv/bin/python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
-```
-
-If `python3.12` is not available, install Python 3.12 from
-<https://www.python.org/downloads/> or with your package manager, for example
-`brew install python@3.12`.
-
-### Important: use this project's `.venv`
-
-The package is installed in:
-
-```text
-atdss-code\.venv
-```
-
-It is **not** installed in a parent environment such as
-`S:\Code\BE project\.venv`. The PowerShell prompt may show `(.venv)` for either
-environment, so check the actual interpreter:
+To check the active interpreter:
 
 ```powershell
+# Windows
 (Get-Command python).Source
 ```
 
-It should end with:
-
-```text
-atdss-code\.venv\Scripts\python.exe
+```bash
+# macOS / Linux
+which python
 ```
 
-If you see:
-
-```text
-No module named 'atdss'
-```
-
-you are using the wrong Python. Use the explicit
-`.\.venv\Scripts\python.exe` commands above, or activate this project's
-environment:
+Activation is optional but also works:
 
 ```powershell
+# Windows
 .\.venv\Scripts\Activate.ps1
 ```
 
-Activation is optional; the explicit interpreter path is the most reliable
-option.
+```bash
+# macOS / Linux
+source .venv/bin/activate
+```
+
+After activation, `python -m atdss.dashboard` uses the repository environment.
+
+### Command convention
+
+The remaining examples use the Windows interpreter path
+`.\.venv\Scripts\python.exe`. On macOS/Linux, replace it with
+`./.venv/bin/python`.
 
 ## What you should see
 
@@ -132,7 +131,13 @@ not step the SimPy event loop in real time.
 ## Verify the installation
 
 ```powershell
+# Windows
 .\.venv\Scripts\python.exe -m pytest -q
+```
+
+```bash
+# macOS / Linux
+./.venv/bin/python -m pytest -q
 ```
 
 Expected result:
@@ -487,8 +492,8 @@ atdss-code/
 
 ### `No module named 'atdss'`
 
-You are using the wrong virtual environment. Run from
-`S:\Code\BE project\atdss-code` and use:
+You are not running the repository's virtual environment. From the repository
+root, use:
 
 ```powershell
 .\.venv\Scripts\python.exe -m atdss.dashboard --help
