@@ -36,6 +36,10 @@ def generate_traffic(
     rng = random.Random(seed)
 
     if horizon_sec is not None:
+        if use_peak:
+            raise ValueError(
+                "use_peak is only supported in Poisson mode, not fixed-horizon mode"
+            )
         if horizon_sec <= 0:
             raise ValueError("horizon_sec must be positive")
         scheduled_times = sorted(

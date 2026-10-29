@@ -131,7 +131,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--peak",
         action="store_true",
-        help="Enable the configured time-of-day peak multiplier",
+        help="Enable the time-of-day peak multiplier for a single Poisson run",
     )
     return parser
 

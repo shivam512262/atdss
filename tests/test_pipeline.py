@@ -121,6 +121,10 @@ def test_fixed_horizon_traffic_stays_in_window(config):
     assert len(times) == 40
     assert min(times) >= 0.0
     assert max(times) <= horizon_sec
+    with pytest.raises(ValueError):
+        generate_traffic(
+            config, count=40, seed=5, horizon_sec=horizon_sec, use_peak=True
+        )
 
 
 def test_compare_writes_artifacts(config, tmp_path):

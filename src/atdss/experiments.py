@@ -271,5 +271,4 @@ def run_traffic_scaling(
         title="Holding-fuel proxy by traffic volume",
     )
 
-    summary = pd.read_csv(summary_path, sep="|", skiprows=8) if False else None
-    return dataframe, summary_path  # type: ignore[return-value]
+    return dataframe, summary_path

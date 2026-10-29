@@ -27,7 +27,7 @@ def run_sequence_simulation(
     runway = simpy.Resource(env, capacity=1)
     landed: list[Aircraft] = []
 
-    def aircraft_process(aircraft: Aircraft) -> simpy.events.Process:
+    def aircraft_process(aircraft: Aircraft):
         wait_sec = max(0.0, aircraft.assigned_or_scheduled_sec - env.now)
         if wait_sec > 0:
             yield env.timeout(wait_sec)

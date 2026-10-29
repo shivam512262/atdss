@@ -78,11 +78,14 @@ Override the demand window if needed:
 python -m atdss --compare --horizon-hours 10
 ```
 
-Optional time-of-day peak multiplier:
+Optional time-of-day peak multiplier for a single Poisson run:
 
 ```powershell
-python -m atdss --compare --peak
+python -m atdss --strategy fcfs --flights 100 --peak
 ```
+
+The peak multiplier is not used in `--compare`, because that mode uses a fixed
+demand window.
 
 Run tests:
 
