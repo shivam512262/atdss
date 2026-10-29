@@ -1,269 +1,550 @@
-# AT-DSS Simulation Milestone
+# AT-DSS: Arrival Sequencing Simulation and Live Dashboard
 
-This repository contains the simulation-first slice of the AT-DSS (AI-assisted
-airport arrival sequencing decision-support) project. It is a standalone,
-runnable package that demonstrates the baseline arrival-sequencing pipeline and
-a live synthetic operations dashboard. The GA optimizer and XAI layer remain
-future work.
+AT-DSS (AI-assisted Airport Arrival Sequencing Decision Support) is a research
+prototype for arrival sequencing at a single-runway airport. This repository is
+the simulation-first implementation slice: it generates synthetic traffic,
+applies baseline sequencing and wake-separation rules, simulates runway use,
+analyses separation risk, and serves a live synthetic operations dashboard.
 
-See `STATUS.md` for the milestone checklist, results snapshot, and a suggested
-demo sequence.
+The project is a **working baseline and demonstration**, not a production air
+traffic control system. The GA optimizer, explainable-AI layer, real flight-data
+ingestion, and validated fuel model are not implemented yet.
 
-## What is implemented
+See [`STATUS.md`](STATUS.md) for the milestone checklist, result snapshot, and a
+suggested demo sequence.
 
-- Synthetic Poisson arrival traffic with a configurable fleet mix.
-- EHAM/Schiphol single-runway configuration.
-- FCFS (first-come, first-served) baseline.
-- Wake-priority baseline (Heavy, then Medium, then Light).
-- Wake-turbulence separation enforcement using the ICAO-style separation matrix.
-- Arbitrary-sequence API, so a future GA can supply a landing order.
-- SimPy discrete-event execution with a single runway and runway occupancy.
-- Consecutive-pair separation analysis:
-  - hard separation violations (must be zero);
-  - conflict-risk pairs from the pre-sequencing schedule;
-  - tight pairs based on a margin threshold;
-  - minimum and average separation margin;
-  - separation-pressure seconds.
-- Metrics: delay, maximum delay, throughput, holding-fuel proxy, conflict risk,
-  violations, and runtime.
-- 100/250/500-arrival traffic-scaling experiment with 5 replications.
-- CSV, Markdown summary, and PNG plots.
-- Standalone HTML real-time animation of final approach, runway occupancy,
-  holding queue, and live metrics.
-- Live synthetic operations dashboard served by FastAPI and WebSocket:
-  - final-approach radar with aircraft positions and holding stack;
-  - sortable, searchable flight board with schedule, ETA, status, and delay;
-  - runway timeline with scheduled, assigned, and actual landing markers;
-  - live alerts for separation risk, queue build-up, and runway occupancy;
-  - click-through flight detail panel;
-  - pause/resume, speed control, reset, and scenario regeneration.
-- Pytest coverage for config loading, traffic generation, baseline ordering,
-  separation enforcement, conflict-risk detection, simulation completion,
-  visualization output, live state, REST controls, and WebSocket streaming.
+## Requirements
 
-## What is deliberately not implemented yet
+- Python **3.12**
+- A modern browser with Canvas and WebSocket support
+- PowerShell on Windows, or a POSIX shell on macOS/Linux
+- No API keys, ADS-B receiver, or external data feed
 
-- GA optimizer.
-- XAI / SHAP explanations.
-- OpenAP or XGBoost fuel burn.
-- Real ADS-B/OpenSky ingestion. The live dashboard is synthetic and does not
-  connect to an external data feed.
-- Disruption scenarios.
-- Multi-airport or multi-runway operations.
-- Gate/taxi optimization.
+## Run it
 
-The fuel number in this milestone is explicitly a **holding-fuel proxy**
-(`delay_sec * fuel_flow_proxy`), not a validated fuel model. Do not present it
-as OpenAP or XGBoost output.
+### Windows: if this project is already set up
 
-## Quick start
-
-Use Python 3.12. From this directory:
+Open PowerShell and run these commands from the repository root:
 
 ```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+cd "S:\Code\BE project\atdss-code"
+.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
 ```
+
+The dashboard opens at:
+
+```text
+http://127.0.0.1:8000
+```
+
+If the browser does not open automatically, open that URL manually. Stop the
+server with `Ctrl+C`.
+
+### Windows: first-time setup
+
+Install Python 3.12, then run:
+
+```powershell
+cd "S:\Code\BE project\atdss-code"
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+```
+
+Replace the `cd` path with your own checkout location if it is different. If the
+`py` launcher is unavailable, use `python -m venv .venv` with Python 3.12 on
+`PATH`.
+
+### macOS / Linux
+
+```bash
+cd path/to/atdss-code
+python3.12 -m venv .venv
+./.venv/bin/python -m pip install --upgrade pip
+./.venv/bin/python -m pip install -e ".[dev]"
+./.venv/bin/python -m pytest -q
+./.venv/bin/python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
+```
+
+If `python3.12` is not available, install Python 3.12 from
+<https://www.python.org/downloads/> or with your package manager, for example
+`brew install python@3.12`.
+
+### Important: use this project's `.venv`
+
+The package is installed in:
+
+```text
+atdss-code\.venv
+```
+
+It is **not** installed in a parent environment such as
+`S:\Code\BE project\.venv`. The PowerShell prompt may show `(.venv)` for either
+environment, so check the actual interpreter:
+
+```powershell
+(Get-Command python).Source
+```
+
+It should end with:
+
+```text
+atdss-code\.venv\Scripts\python.exe
+```
+
+If you see:
+
+```text
+No module named 'atdss'
+```
+
+you are using the wrong Python. Use the explicit
+`.\.venv\Scripts\python.exe` commands above, or activate this project's
+environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Activation is optional; the explicit interpreter path is the most reliable
+option.
+
+## What you should see
+
+The dashboard opens with a **100-flight synthetic scenario** and shows:
+
+- a simulated clock that advances in real time;
+- aircraft on a 10 NM final approach;
+- a holding stack on the left;
+- runway occupancy and the next landing;
+- a sortable flight board with schedule, ETA, actual landing, status, delay, and
+  conflict-risk flags;
+- a runway timeline with scheduled, assigned, and actual landing markers;
+- live alerts and metric cards;
+- a flight detail drawer when a row is clicked.
+
+The clock is **elapsed simulated time**, starting at `00:00:00`; it is not real
+UTC. The dashboard replays a completed SimPy scenario in simulated time. It does
+not step the SimPy event loop in real time.
+
+## Verify the installation
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Expected result:
+
+```text
+25 passed
+```
+
+A third-party deprecation warning from Starlette/httpx may also appear; it does
+not affect the tests.
+
+## At a glance
+
+| Item | Current state |
+|---|---|
+| Airport | EHAM / Amsterdam Schiphol, arrival runway 24 |
+| Traffic | Synthetic Poisson arrivals with a configurable fleet mix |
+| Sequencing | FCFS and bounded wake-priority baselines |
+| Safety model | ICAO-style wake-separation matrix |
+| Runway model | Single runway with occupancy time |
+| Dashboard | FastAPI + WebSocket + vanilla HTML/CSS/Canvas |
+| Experiments | 100/250/500 arrivals, 5 replications, fixed 12-hour window |
+| Tests | 25 passing |
+| Data source | Synthetic only; no ADS-B/OpenSky feed |
+| Scope | Approximately 30% of the planned AT-DSS project |
+
+## Live dashboard
+
+Each scenario is generated once by the existing SimPy pipeline. A live state
+layer then replays that scenario in simulated time and updates flight statuses,
+positions, runway occupancy, alerts, and metrics. Pressing **Regenerate** runs a
+new simulation with the selected parameters.
+
+### Dashboard features
+
+- **Clock and playback:** pause/resume, speed control, reset.
+- **Final-approach radar:** aircraft positions, distance from the threshold,
+  runway occupancy, and holding stack.
+- **Flight board:** callsign, aircraft type, wake category, origin, scheduled
+  time, assigned ETA, actual landing time, status, delay, and risk flag.
+- **Runway timeline:** scheduled markers, assigned slots, and actual landings.
+- **Alerts:** separation risk, queue build-up, high delay, and runway occupancy.
+- **Flight detail drawer:** timing, live position, separation margin,
+  predecessor, and holding-fuel proxy.
+- **Scenario form:** flights, seed, strategy, and arrival rate.
+
+### Controls
+
+| Control | Effect |
+|---|---|
+| Pause / Resume | Stop or restart simulated time |
+| Reset | Restart the current scenario from the beginning |
+| Speed | Change simulated seconds per wall-clock second |
+| Regenerate | Generate a new scenario from the form parameters |
+| Status filter | Show only scheduled, en-route, holding, final, or landed flights |
+| Search | Filter by callsign, aircraft type, origin, or wake category |
+| Row click | Open the flight detail drawer |
+
+### Dashboard CLI options
+
+| Option | Default | Description |
+|---|---:|---|
+| `--config` | repository EHAM config | Path to an airport YAML file |
+| `--host` | `127.0.0.1` | Bind address |
+| `--port` | `8000` | Bind port |
+| `--flights` | `100` | Number of arrival flights |
+| `--seed` | `42` | Synthetic traffic seed |
+| `--strategy` | `fcfs` | `fcfs` or `priority` |
+| `--rate` | `30` | Arrival demand in flights per hour |
+| `--speed` | `60` | Simulated seconds per wall-clock second |
+| `--open` | off | Open the dashboard in the default browser |
+| `--log-level` | `info` | Uvicorn log level |
+
+The packaged console script is also available after installation:
+
+```powershell
+.\.venv\Scripts\atdss-dashboard.exe --flights 100 --open
+```
+
+On macOS/Linux use `./.venv/bin/atdss-dashboard`.
+
+### Dashboard API
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/state` | Complete dashboard snapshot |
+| `GET` | `/api/flights` | Flight rows |
+| `GET` | `/api/metrics` | Aggregate metrics |
+| `GET` | `/api/health` | Server health and simulation status |
+| `POST` | `/api/control` | Pause, resume, toggle, speed, reset, seek, regenerate |
+| `POST` | `/api/scenario` | Generate a new traffic sample |
+| `WS` | `/ws` | Live snapshot stream, sent every 0.5 seconds |
+
+Interactive API documentation is available at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Example control requests:
+
+```json
+{"action": "pause"}
+{"action": "speed", "value": 120}
+{"action": "regenerate", "flights": 250, "seed": 7, "strategy": "priority", "rate": 30}
+```
+
+Example PowerShell request:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/control" `
+  -ContentType "application/json" `
+  -Body '{"action":"pause"}'
+```
+
+The dashboard is synthetic. It does **not** ingest ADS-B, OpenSky, or airport
+operational data.
+
+## Batch simulation
 
 Run one FCFS case:
 
 ```powershell
-python -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30
+.\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30
 ```
 
-Run one wake-priority case:
+Run one bounded wake-priority case:
 
 ```powershell
-python -m atdss --strategy priority --flights 100 --seed 42 --rate 30
+.\.venv\Scripts\python.exe -m atdss --strategy priority --flights 100 --seed 42 --rate 30
 ```
 
-Generate the visual simulation:
+The bounded priority baseline subtracts a fixed time bonus from the scheduled
+time: Heavy 180 s, Medium 60 s, Light 0 s. It is not an “all Heavy first” sort.
+
+Optional time-of-day peak multiplier for a single Poisson run:
 
 ```powershell
-python -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual
+.\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --peak
 ```
 
-Add `--open` to launch it automatically:
+The peak multiplier is not used by `--compare`, because that mode uses a fixed
+demand window.
+
+## Standalone visual playback
+
+Generate a self-contained HTML animation of one completed run:
 
 ```powershell
-python -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual --open
+.\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual
 ```
 
-The visual simulation is a standalone HTML file. It needs no server and no
-additional Python package. Open the generated file in any browser. It shows:
+Open it automatically:
 
-- aircraft moving along a 10 NM final approach in real time;
-- wake-category colours;
-- the separation gap between aircraft;
-- runway occupancy after touchdown;
-- the holding queue;
-- live landed, on-final, holding, and average-delay counters;
-- play/pause, reset, speed, and timeline controls.
+```powershell
+.\.venv\Scripts\python.exe -m atdss --strategy fcfs --flights 100 --seed 42 --rate 30 --visual --open
+```
 
-A deep link to a point on the timeline is also supported:
+The generated file is:
+
+```text
+results/simulation_fcfs_100.html
+```
+
+This is a standalone playback of one completed run, not the live dashboard. It
+shows aircraft moving along the 10 NM final approach, wake-category colours,
+separation gaps, runway occupancy, the holding queue, and live counters.
+
+Deep link to a point on the timeline:
 
 ```text
 results/simulation_fcfs_100.html?t=0.5
 ```
 
-## Live dashboard
+## Traffic-scaling experiment
 
-Start the synthetic live simulator with 100 flights, 60 simulated seconds per
-wall-clock second, and open the browser automatically:
-
-```powershell
-python -m atdss.dashboard --flights 100 --seed 42 --rate 30 --speed 60 --open
-```
-
-Or run it without opening a browser:
+The experiment uses a fixed 12-hour demand window for every volume. Therefore
+100, 250, and 500 arrivals correspond to approximately 8, 21, and 42
+arrivals/hour, rather than simply running the same rate for longer.
 
 ```powershell
-python -m atdss.dashboard --flights 100 --seed 42 --rate 30
+.\.venv\Scripts\python.exe -m atdss --compare --counts 100 250 500 --reps 5 --seed 42
 ```
 
-Then open <http://127.0.0.1:8000>. The dashboard streams a snapshot over a
-WebSocket every 0.5 seconds and exposes REST controls:
-
-- `GET /api/state` — complete dashboard snapshot;
-- `GET /api/flights` — flight rows;
-- `GET /api/metrics` — aggregate metrics;
-- `POST /api/control` — pause, resume, toggle, speed, reset, seek, regenerate;
-- `POST /api/scenario` — generate a new traffic sample;
-- `WS /ws` — live snapshot stream.
-
-Useful CLI options include `--strategy fcfs|priority`, `--host`, `--port`,
-`--config`, and `--speed`. The dashboard is also usable as a console script
-after installation:
+Override the demand window:
 
 ```powershell
-atdss-dashboard --flights 100 --open
+.\.venv\Scripts\python.exe -m atdss --compare --horizon-hours 10
 ```
 
-The live dashboard is a synthetic simulator view. It does not ingest ADS-B,
-OpenSky, or airport operational data.
+### Current result snapshot
 
-Run the full 100/250/500 experiment. Each volume is placed inside the same
-12-hour demand window, so the volumes correspond to roughly 8, 21, and 42
-arrivals/hour:
+Seed 42, five replications, fixed 12-hour window:
 
-```powershell
-python -m atdss --compare --counts 100 250 500 --reps 5 --seed 42
-```
+| Strategy | Flights | Avg delay (s) | Conflict-risk pairs | Separation violations |
+|---|---:|---:|---:|---:|
+| FCFS | 100 | 9.7 | 17.0 | 0 |
+| FCFS | 250 | 65.6 | 106.8 | 0 |
+| FCFS | 500 | 2,253.5 | 327.0 | 0 |
+| Priority | 100 | 24.1 | 17.2 | 0 |
+| Priority | 250 | 92.3 | 98.0 | 0 |
+| Priority | 500 | 2,302.0 | 274.0 | 0 |
 
-Override the demand window if needed:
-
-```powershell
-python -m atdss --compare --horizon-hours 10
-```
-
-Optional time-of-day peak multiplier for a single Poisson run:
-
-```powershell
-python -m atdss --strategy fcfs --flights 100 --peak
-```
-
-The peak multiplier is not used in `--compare`, because that mode uses a fixed
-demand window.
-
-Run tests:
-
-```powershell
-python -m pytest -q
-```
+The 500-arrival case is near or above single-runway capacity with this fleet
+mix. The sharp delay increase is the intended saturation signal, not a model
+failure.
 
 ## Generated artifacts
 
-`python -m atdss --compare` writes to `results/`:
+The batch tools write to `results/`:
 
-- `baseline_comparison.csv`: one row per strategy, volume, and replication.
-- `sample_sequence.csv`: ordered aircraft for the first run of each strategy.
-- `summary.md`: aggregate table and metric definitions.
-- `fig_delay_vs_traffic.png`: average delay with replication spread.
-- `fig_conflict_risk_vs_traffic.png`: conflict-risk pairs.
-- `fig_fuel_proxy_vs_traffic.png`: holding-fuel proxy.
-- `simulation_<strategy>_<flights>.html`: standalone visual simulation when
-  `--visual` is used.
+| File | Purpose |
+|---|---|
+| `baseline_comparison.csv` | One row per strategy, volume, and replication |
+| `sample_sequence.csv` | Ordered aircraft for the first run of each strategy |
+| `summary.md` | Aggregate table and metric definitions |
+| `fig_delay_vs_traffic.png` | Average delay by traffic volume |
+| `fig_conflict_risk_vs_traffic.png` | Conflict-risk pairs by traffic volume |
+| `fig_fuel_proxy_vs_traffic.png` | Holding-fuel proxy by traffic volume |
+| `simulation_<strategy>_<flights>.html` | Standalone visual playback when `--visual` is used |
 
-## Layout
+`results/` is ignored by Git except for `results/.gitkeep`. The live dashboard
+does not write result files.
+
+## How it works
+
+```text
+config/ehamp.yaml
+        |
+        v
+synthetic traffic generation
+        |
+        v
+sequencing (FCFS or bounded wake priority)
+        |
+        v
+wake-separation enforcement
+        |
+        v
+SimPy single-runway execution
+        |
+        +--> conflict analysis + metrics
+        |          |
+        |          +--> CSV / Markdown / PNG
+        |          +--> standalone HTML playback
+        |
+        +--> live state layer
+                   |
+                   v
+          FastAPI REST + WebSocket
+                   |
+                   v
+             browser dashboard
+```
+
+The live state layer derives statuses from the completed sequence:
+
+- scheduled → en route → holding → final → landed;
+- final-approach position from the actual landing time and approach speed;
+- runway occupancy from the landing time and occupancy duration;
+- alerts and metrics for the current simulated time.
+
+## Metrics and interpretation
+
+| Metric | Meaning |
+|---|---|
+| **Assigned landing time** | Earliest time satisfying the scheduled arrival and required wake separation after the previous aircraft |
+| **Delay** | Actual landing time minus scheduled arrival time |
+| **Conflict-risk pair** | Consecutive pair whose original scheduled gap was below the required wake-separation gap, meaning sequencing had to intervene |
+| **Separation violation** | Consecutive pair whose actual landing gap is below required separation; expected to be zero |
+| **Tight pair** | Actual gap below `conflict_margin_ratio` times the required gap (default 1.20) |
+| **Separation pressure** | Delay forced by separation, summed across pairs |
+| **Throughput** | Landed aircraft divided by the observed arrival horizon |
+| **Holding-fuel proxy** | Delay seconds multiplied by a wake-category fuel-flow proxy |
+
+Because the scheduler always enforces separation, every final sequence has zero
+landing-gap violations by construction. The conflict-risk metric therefore
+measures how often the original schedule was already below the required gap and
+needed intervention.
+
+The **fuel number is a holding-fuel proxy**, not an OpenAP or XGBoost result. Do
+not present it as a validated fuel model.
+
+## Scope
+
+### Implemented
+
+- Synthetic Poisson traffic with a configurable fleet mix.
+- EHAM/Schiphol single-runway configuration.
+- FCFS and bounded wake-priority baselines.
+- ICAO-style wake-separation enforcement.
+- Arbitrary-sequence support for a future optimizer.
+- SimPy single-runway execution.
+- Consecutive-pair conflict-risk and separation analysis.
+- Delay, throughput, safety, and holding-fuel-proxy metrics.
+- 100/250/500-arrival experiment with five replications.
+- CSV, Markdown, PNG, and standalone HTML outputs.
+- Live synthetic dashboard with FastAPI, WebSocket, radar, flight board,
+  runway timeline, alerts, detail drawer, and controls.
+- Automated tests for the pipeline, visualization, live state, REST API, and
+  WebSocket stream.
+
+### Not implemented
+
+- GA sequence optimizer.
+- XAI / SHAP explanations.
+- OpenAP or XGBoost fuel burn.
+- Real ADS-B/OpenSky ingestion.
+- Disruption scenarios.
+- Multi-airport or multi-runway operations.
+- Gate or taxi optimization.
+
+This is not a certified operational system. It is a research and demonstration
+prototype using synthetic data.
+
+## Project layout
 
 ```text
 atdss-code/
-  config/ehamp.yaml       Airport, separation, traffic, and proxy settings
+  config/ehamp.yaml                  Airport, separation, traffic, and proxy settings
   src/atdss/
-    config.py             YAML loading and typed airport config
-    models.py             Aircraft, strategy, conflict, and result models
-    traffic.py            Poisson traffic and fleet-mix generation
-    sequencing.py         FCFS, wake priority, and separation enforcement
-    conflict.py           Consecutive-pair conflict-risk analysis
-    simulation.py         SimPy single-runway execution
-    metrics.py            Delay, throughput, safety, and fuel-proxy metrics
-    experiments.py        Replication runner and artifact writer
-    plots.py              Matplotlib figures
-    visualization.py      Standalone HTML/Canvas animation
-    cli.py                Command-line entry point
-    dashboard/            Live FastAPI/WebSocket dashboard
-      state.py            Live clock, status transitions, snapshots, controls
-      app.py              REST API, WebSocket stream, static file serving
-      __main__.py         python -m atdss.dashboard entry point
-      static/             Vanilla HTML/CSS/Canvas dashboard
-  tests/test_pipeline.py  End-to-end and unit checks
-  tests/test_visualization.py  Animation payload and HTML checks
-  tests/test_dashboard_state.py  Live state and status-transition checks
-  tests/test_dashboard_api.py    REST, static-asset, and WebSocket checks
+    config.py                        YAML loading and typed airport config
+    models.py                        Aircraft, strategy, conflict, and result models
+    traffic.py                       Synthetic Poisson traffic and fleet mix
+    sequencing.py                    FCFS, wake priority, separation enforcement
+    conflict.py                      Consecutive-pair conflict-risk analysis
+    simulation.py                    SimPy single-runway execution
+    metrics.py                       Delay, throughput, safety, and fuel-proxy metrics
+    experiments.py                   Replication runner and artifact writer
+    plots.py                         Matplotlib figures
+    visualization.py                 Standalone HTML/Canvas playback
+    cli.py                           Batch command-line entry point
+    dashboard/
+      state.py                       Live clock, statuses, snapshots, controls
+      app.py                         REST API, WebSocket stream, static serving
+      __main__.py                    python -m atdss.dashboard entry point
+      static/                        HTML, CSS, and Canvas dashboard
+  tests/
+    test_pipeline.py                 Pipeline and unit checks
+    test_visualization.py            Animation payload and HTML checks
+    test_dashboard_state.py          Live state and status-transition checks
+    test_dashboard_api.py            REST, static-asset, and WebSocket checks
+  results/                           Generated artifacts (Git-ignored)
+  README.md
+  STATUS.md
+  pyproject.toml
+  requirements.txt
 ```
 
-## Design note: fixed demand window
+## Troubleshooting
 
-The 100/250/500 experiment uses a fixed 12-hour window for every volume. This
-means the three cases correspond to increasing demand (about 8, 21, and 42
-arrivals/hour), rather than simply running the same traffic rate for longer.
-Without a fixed window, a longer run at the same rate can show a lower average
-delay because the initial queue is amortized over more aircraft. The fixed
-window keeps the comparison interpretable.
+### `No module named 'atdss'`
 
-The 500-arrival case is near or above the capacity of a single runway with this
-fleet mix, so its delay and conflict-risk values are expected to rise sharply.
-That is the intended saturation signal, not a model failure.
-
-## Metric definitions
-
-- **Assigned landing time**: the earliest time that satisfies the scheduled
-  arrival and the required wake separation after the previous aircraft.
-- **Delay**: actual landing time minus scheduled arrival time.
-- **Conflict-risk pair**: a consecutive pair whose original scheduled gap was
-  below the required wake-separation gap, meaning sequencing had to intervene.
-- **Separation violation**: a consecutive pair whose actual landing gap is
-  below the required separation. Because the scheduler enforces hard
-  separation, this should be zero. A nonzero value is a correctness failure.
-- **Tight pair**: actual gap below `conflict_margin_ratio` times the required
-  gap (default 1.20).
-- **Separation pressure**: delay forced by separation, summed across pairs.
-- **Throughput**: landed aircraft divided by the observed arrival horizon.
-
-## Design note: why conflict-risk instead of "conflicts"
-
-If the scheduler always enforces separation, every final sequence has zero
-landing-gap violations by construction. Reporting only that number would be
-uninformative. This milestone therefore reports both:
-
-1. the hard safety check (violations, expected zero); and
-2. the amount of separation pressure and conflict risk present in the
-   pre-sequencing schedule.
-
-This distinction should be kept explicit in the report and presentation.
-
-## Git
-
-This directory is intended to be its own repository:
+You are using the wrong virtual environment. Run from
+`S:\Code\BE project\atdss-code` and use:
 
 ```powershell
-git init
-git add .
-git commit -m "Add AT-DSS simulation milestone"
+.\.venv\Scripts\python.exe -m atdss.dashboard --help
 ```
 
-The `.gitignore` excludes the virtual environment, caches, and generated
-results. Keep `results/.gitkeep` if you want the output directory to exist in
-the repository.
+Check the interpreter:
+
+```powershell
+(Get-Command python).Source
+```
+
+### The dashboard does not open automatically
+
+Open the URL manually:
+
+```text
+http://127.0.0.1:8000
+```
+
+If port 8000 is already in use:
+
+```powershell
+.\.venv\Scripts\python.exe -m atdss.dashboard --port 8010 --open
+```
+
+### PowerShell blocks `Activate.ps1`
+
+Allow scripts for the current shell only:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+Or skip activation and use `.\.venv\Scripts\python.exe` directly.
+
+### The dashboard loads but shows no data
+
+- Confirm the server is running on the URL and port you opened.
+- Check that the browser is not blocking WebSocket connections.
+- Open `http://127.0.0.1:8000/api/health` directly.
+- Check the terminal for Uvicorn errors.
+
+### The 500-flight case has very high delay
+
+This is expected. The 500-arrival case is near or above the single-runway
+capacity of the configured fleet mix, so queueing and delay rise sharply.
+
+## Documentation and help
+
+- [`STATUS.md`](STATUS.md) — milestone status, results snapshot, and demo plan.
+- `http://127.0.0.1:8000/docs` — interactive dashboard API documentation.
+- `.\.venv\Scripts\python.exe -m atdss --help` — batch simulation options.
+- `.\.venv\Scripts\python.exe -m atdss.dashboard --help` — dashboard options.
+
+## Repository notes
+
+The repository is already initialized. The `.gitignore` excludes `.venv/`,
+caches, build output, and generated files under `results/`; `results/.gitkeep` is
+tracked so the directory exists in a fresh checkout.
