@@ -5,6 +5,9 @@ airport arrival sequencing decision-support) project. It is a standalone,
 runnable package that demonstrates the baseline arrival-sequencing pipeline
 before the GA optimizer, XAI layer, and dashboard are added.
 
+See `STATUS.md` for the milestone checklist, results snapshot, and a suggested
+demo sequence.
+
 ## What is implemented
 
 - Synthetic Poisson arrival traffic with a configurable fleet mix.
